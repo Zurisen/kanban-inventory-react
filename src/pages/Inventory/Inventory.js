@@ -2,6 +2,7 @@ import React from 'react'
 import DefaultTable from '../../components/Inventory/DefaultTable';
 import { useState, useEffect } from 'react';
 import SearchBar from '../../components/Inventory/SearchBar';
+import AddProduct from '../../components/Inventory/AddProduct';
 
 export const Inventory = () => {
     const [products, setProducts] = useState([]);
@@ -49,7 +50,7 @@ export const Inventory = () => {
 
           {/* Add product Button & Search Bar */}
           <div style={{ display: 'grid', gridTemplateColumns: 'auto 1fr', gap: '8px' }}>
-            <button type="button" className="text-gray-900 bg-white border border-gray-300 focus:outline-none hover:bg-gray-100 focus:ring-4 focus:ring-gray-200 font-medium rounded-lg text-sm px-5 py-4 mb-2 mr-3 dark:bg-gray-800 dark:text-white dark:border-gray-600 dark:hover:bg-gray-700 dark:hover:border-gray-600 dark:focus:ring-gray-700 ">Add Product</button>
+            <AddProduct/>
             <SearchBar onChangeCallback={handleSearchInputChange} itemsFound={itemsFound}/>
           </div>
 
