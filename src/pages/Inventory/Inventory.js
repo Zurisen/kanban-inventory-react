@@ -29,8 +29,15 @@ export const Inventory = () => {
           );
       });
       
+      // Convert the lastModified strings to Date objects
+      filteredProducts.forEach((product) => {
+        product.lastModified = new Date(product.lastModified).toLocaleString(); // Convert to a string in desired format
+      });
 
-      setProducts(filteredProducts.sort((a, b) => a.lastModified - b.lastModified));
+      // Sort the filtered products by lastModified in descending order
+      filteredProducts.sort((a, b) => new Date(b.lastModified) - new Date(a.lastModified));
+
+      setProducts(filteredProducts);
       setItemsFound(filteredProducts.length);
     }
 
