@@ -1,11 +1,12 @@
 import React, { useEffect, useState, useCallback } from 'react';
-//import { filter } from 'json-server-auth';
+import { debounce } from 'lodash';
+
 export const SearchBar = ({onChangeCallback, itemsFound}) => {
 
-    const onChange = (event) => {
+    const onChange = debounce((event) => {
         const input = event.target.value;
         onChangeCallback(input); // Pass the search input back to the Inventory component
-      };
+      }, 500);
 
     return (
         <form className="w-full">
