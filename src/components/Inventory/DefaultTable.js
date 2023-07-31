@@ -1,6 +1,8 @@
 'use client';
+
 export default function DefaultTable({products}) {
   return (
+
 
 <div class="relative overflow-x-auto rounded-lg">
     <table class="w-full text-sm text-left text-gray-500 dark:text-gray-400">
@@ -17,6 +19,9 @@ export default function DefaultTable({products}) {
                 </th>
                 <th scope="col" class="px-6 py-3">
                     Location
+                </th>
+                <th scope="col" class="px-6 py-3">
+                    Last Modified
                 </th>
                 <th scope="col" class="px-6 py-3">
                     State
@@ -38,6 +43,9 @@ export default function DefaultTable({products}) {
                         </td>
                         <td class="px-6 py-4">
                             {product.location}
+                        </td>
+                        <td class="px-6 py-4">
+                            {product.lastModified}
                         </td>
                         <td class="px-6 py-4">
                             {product.state}

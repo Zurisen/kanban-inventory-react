@@ -3,13 +3,14 @@ import DefaultTable from '../../components/Inventory/DefaultTable';
 import { useState, useEffect } from 'react';
 import SearchBar from '../../components/Inventory/SearchBar';
 import AddProduct from '../../components/Inventory/AddProduct';
+import { filter } from 'lodash';
 
 export const Inventory = () => {
     const [products, setProducts] = useState([]);
     const [itemsFound, setItemsFound] = useState(0);
 
   // Move the filterProducts function and useEffect to the Inventory component
-    async function filterProducts(searchQuery, sortby) {
+    async function filterProducts(searchQuery) {
       const response = await fetch("http://localhost:3000/products");
       const data = await response.json();
 
@@ -27,8 +28,9 @@ export const Inventory = () => {
             product.state.toLowerCase().includes(lowerCaseSearchQuery)
           );
       });
+      
 
-      setProducts(filteredProducts);
+      setProducts(filteredProducts.sort((a, b) => a.lastModified - b.lastModified));
       setItemsFound(filteredProducts.length);
     }
 
@@ -50,7 +52,7 @@ export const Inventory = () => {
 
           {/* Add product Button & Search Bar */}
           <div style={{ display: 'grid', gridTemplateColumns: 'auto 1fr', gap: '8px' }}>
-            <AddProduct/>
+            <AddProduct filterProducts={filterProducts}/>
             <SearchBar onChangeCallback={handleSearchInputChange} itemsFound={itemsFound}/>
           </div>
 
