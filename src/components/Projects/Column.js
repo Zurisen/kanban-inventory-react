@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import boardsSlice from "../../redux/boardSlice";
 import Task from "./Task";
-function Column({ }) {
+function Column({ colIndex }) {
   const colors = [
     "bg-red-500",
     "bg-orange-500",
@@ -12,6 +14,29 @@ function Column({ }) {
     "bg-pink-500",
     "bg-sky-500",
   ];
+
+  const dispatch = useDispatch();
+  const [color, setColor] = useState(null)
+  const boards = useSelector((state) => state.boards);
+  const board = boards.find((board) => board.isActive === true);
+
+  const col = board.columns.find((col, i) => i === colIndex);
+
+  const handleOnDrop = (e) => {
+    const { prevColIndex, taskIndex } = JSON.parse(
+      e.dataTransfer.getData("text")
+    );
+
+    if (colIndex !== prevColIndex) {
+      dispatch(
+        boardsSlice.actions.dragTask({ colIndex, prevColIndex, taskIndex })
+      );
+    }
+  };
+
+  const handleOnDragOver = (e) => {
+    e.preventDefault();
+  };
 
   return (
     <div
