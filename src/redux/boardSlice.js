@@ -36,9 +36,9 @@ const boardsSlice = createSlice({
       });
     },
     addTask: (state, action) => {
-      const { title, status, description, subtasks, newColIndex } =
+      const { title, company, startDate, endDate, description, location, newColIndex} =
         action.payload;
-      const task = { title, description, subtasks, status };
+      const task = { title, company, startDate, endDate, description, location };
       const board = state.find((board) => board.isActive);
       const column = board.columns.find((col, index) => index === newColIndex);
       column.tasks.push(task);

@@ -59,7 +59,7 @@ function Column({ colIndex }) {
         </button>
       </p>
       {isAddTaskModalOpen && (
-        <AddTaskModal taskIndex={5} colIndex={colIndex} setIsAddTaskModalOpen={setIsAddTaskModalOpen}/>
+        <AddTaskModal colIndex={colIndex} setIsAddTaskModalOpen={setIsAddTaskModalOpen}/>
       )}
 
       {col.tasks.map((task, index) => (

@@ -4,41 +4,45 @@ import boardsSlice from "../../redux/boardSlice";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 
-function AddTaskModal({ taskIndex, colIndex, setIsAddTaskModalOpen }) {
+function AddTaskModal({colIndex, setIsAddTaskModalOpen }) {
     const dispatch = useDispatch();
     const boards = useSelector((state) => state.boards);
     const board = boards.find((board) => board.isActive === true);
     const columns = board.columns;
     const col = columns.find((col, i) => i === colIndex);
-    const task = col.tasks.find((task, i) => i === taskIndex);
 
     /* form elements */
-    const [newProduct, setNewProduct] = useState({
-        title: '',
-        company: '',
-        location: '',
-        description: ''
-      });
-    const handleInputChange = (event) => {
-        console.log('Changing input: ', newProduct);
-        const { name, value } = event.target;
-        setNewProduct({
-          ...newProduct,
-          [name]: value,
-        });
-      };
+    const [title, setTitle] = useState('');
+    const [company, setCompany] = useState('');
+    const [description, setDescription] = useState('');
+    const [location, setLocation] = useState('');
+    const [newColIndex, setNewColIndex] = useState(colIndex);
 
+    const [date, setDate] = useState(new Date());
+    const [startDate, setStartDate] = useState();
+    const [endDate, setEndDate] = useState();
 
-      const [date, setDate] = useState(new Date());
-      const [startDate, setStartDate] = useState();
-      const [endDate, setEndDate] = useState();
-    
-      const onChange = (range) => {
+    const onChangeDate = (range) => {
         const [startDate, endDate] = range;
         setStartDate(startDate);
         setEndDate(endDate);
-      };
+    };
 
+
+    async function onSubmit(event)  {
+        event.preventDefault();
+        dispatch(
+            boardsSlice.actions.addTask({
+                title,
+                company,
+                startDate,
+                endDate,
+                description,
+                location,
+                newColIndex
+            })
+        );
+    }
 
     return (
         <>
@@ -60,24 +64,17 @@ function AddTaskModal({ taskIndex, colIndex, setIsAddTaskModalOpen }) {
                 {/*body*/}
                 <div className="relative p-6 flex-auto text-slate-800 dark:text-gray-200">
 
-                <form >
+                <form  onSubmit={onSubmit}>
 
                     <div className="grid md:grid-cols-2 md:gap-6">
                         <div className="relative z-0 w-full mb-6 group">
-                            <input type="projectcode" name="projectcode" id="projectcode" value={null} onChange={null} className="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer" placeholder=" " required />
+                            <input onChange={(e) => setTitle(e.target.value)} type="projectcode" name="projectcode" id="projectcode" value={title} className="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer" placeholder=" " required />
                             <label for="projectcode" className="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:left-0 peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">Project Code</label>
                         </div>
-                        <div className="relative z-0 w-full mb-6 group">
-                            <input type="company" name="company" id="company" value={null} onChange={null} className="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer" placeholder=" " required />
-                            <label for="company" className="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:left-0 peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">Company</label>
-                        </div>
-                    </div>
-
-
-                    <div className="relative z-10 w-full mb-6 group">
+                        <div className="relative z-10 w-full mb-6 group">
                         <DatePicker name="date" id="date"  placeholder="08/01/2023 - 08/24/2023"
                                 selected={startDate}
-                                onChange={onChange}
+                                onChange={onChangeDate}
                                 startDate={startDate}
                                 endDate={endDate}
                                 selectsRange
@@ -85,15 +82,26 @@ function AddTaskModal({ taskIndex, colIndex, setIsAddTaskModalOpen }) {
                                 className="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer"
                         />
                         <label for="date" className="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:left-0 peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6 left-0">Start Date - End Date</label>
+                        </div>
                     </div>
 
-                    <div className="relative z-0 w-full mb-6 group">
-                        <input type="text" name="location" id="location" value={null} onChange={null} className="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer" placeholder=" " required />
-                        <label for="location" className="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:left-0 peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">Location</label>
+
+
+
+                    <div className="grid md:grid-cols-2 md:gap-6">
+                        <div className="relative z-0 w-full mb-6 group">
+                            <input onChange={(e) => setCompany(e.target.value)} type="company" name="company" id="company" value={company} className="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer" placeholder=" " required />
+                            <label for="company" className="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:left-0 peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">Company</label>
+                        </div>
+                        <div className="relative z-0 w-full mb-6 group">
+                            <input onChange={(e) => setLocation(e.target.value)} type="text" name="location" id="location" value={location} className="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer" placeholder=" " required />
+                            <label for="location" className="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:left-0 peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">Location</label>
+                        </div>
+
                     </div>
                     <div className="relative z-0 w-full mb-6 group">
-                        <input type="text" name="description" id="description" value={null} onChange={null} className="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer" placeholder=" " required />
-                        <label for="description" className="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:left-0 peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">Description</label>
+                            <input onChange={(e) => setDescription(e.target.value)} type="text" name="description" id="description" value={description} className="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer" placeholder=" " required />
+                            <label for="description" className="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:left-0 peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">Description</label>
                     </div>
                     <div className="relative z-0 w-full mb-6 group">
                         <input type="text" name="serials" id="serials" value={null} onChange={null} className="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer" placeholder=" " required />
