@@ -2,6 +2,8 @@ import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import boardsSlice from "../../redux/boardSlice";
 import Task from "./Task";
+import AddTaskModal from "./AddTaskModal";
+
 function Column({ colIndex }) {
   const colors = [
     "bg-red-500",
@@ -19,8 +21,8 @@ function Column({ colIndex }) {
   const [color, setColor] = useState(null)
   const boards = useSelector((state) => state.boards);
   const board = boards.find((board) => board.isActive === true);
-
   const col = board.columns.find((col, i) => i === colIndex);
+  const [isAddTaskModalOpen, setIsAddTaskModalOpen] = useState(false);
 
   const handleOnDrop = (e) => {
     const { prevColIndex, taskIndex } = JSON.parse(
@@ -39,19 +41,30 @@ function Column({ colIndex }) {
   };
 
   return (
+
     <div
-
-      className="scrollbar-hide   mx-5 pt-[50px] min-w-[280px] "
+      onDrop={handleOnDrop}
+      onDragOver={handleOnDragOver}
+      className="scrollbar-hide   mx-2 pt-[50px] min-w-[280px] "
     >
-      <p className="font-semibold flex  items-center  gap-2 tracking-widest md:tracking-[.2em]  text-gray-900 rounded-lg dark:text-white">
-        <div className={`rounded-full w-4 h-4 bg-orange-500 `} />
-        {"Rented"} ({3})
+      <p className=" font-semibold flex items-center  gap-2 tracking-widest md:tracking-[.2em] text-[#828fa3]">
+        <div className={`rounded-full w-4 h-4 ${colors[1]} `} />
+        {col.name} ({col.tasks.length})
+        <button         
+        onClick={() => {
+          setIsAddTaskModalOpen(true);
+        }}
+         dir="rtl" class="bg-white  dark:bg-gray-700 shadow-[#364e7e1a] dark:hover:bg-[#635fc7] dark:text-white  font-semibold py-0 px-2 rounded shadow ml-2">
+        +
+        </button>
       </p>
-      <Task/>
-      <Task/>
-      <Task/>
-    <Task/>
+      {isAddTaskModalOpen && (
+        <AddTaskModal taskIndex={5} colIndex={colIndex} setIsAddTaskModalOpen={setIsAddTaskModalOpen}/>
+      )}
 
+      {col.tasks.map((task, index) => (
+        <Task key={index} taskIndex={index} colIndex={colIndex} />
+      ))}
     </div>
   );
 }
