@@ -1,22 +1,16 @@
 import React, { useState } from "react";
-import { useDispatch, useSelector } from "react-redux";
 import boardsSlice from "../../redux/boardSlice";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
+import axios from "axios";
 
-function AddTaskModal({colIndex, setIsAddTaskModalOpen }) {
-    const dispatch = useDispatch();
-    const boards = useSelector((state) => state.boards);
-    const board = boards.find((board) => board.isActive === true);
-    const columns = board.columns;
-    const col = columns.find((col, i) => i === colIndex);
+function AddTaskModal({colIndex, col, setIsAddTaskModalOpen, findTasksInColumn}) {
 
     /* form elements */
     const [title, setTitle] = useState('');
     const [company, setCompany] = useState('');
     const [description, setDescription] = useState('');
     const [location, setLocation] = useState('');
-    const [newColIndex, setNewColIndex] = useState(colIndex);
 
     const [date, setDate] = useState(new Date());
     const [startDate, setStartDate] = useState();
@@ -31,17 +25,21 @@ function AddTaskModal({colIndex, setIsAddTaskModalOpen }) {
 
     async function onSubmit(event)  {
         event.preventDefault();
-        dispatch(
-            boardsSlice.actions.addTask({
-                title,
-                company,
-                startDate,
-                endDate,
-                description,
-                location,
-                newColIndex
-            })
-        );
+        const newProduct = JSON.stringify({
+            "title": title,
+            "company": company,
+            "startDate": "d",
+            "endDate": "d",
+            "description": description,
+            "location": location
+          })
+        try {
+            const response = await axios.get(`http://localhost:3000/boards`, newProduct);
+            console.log(response);
+          } catch (error) {
+            console.error('Error adding task:', error);
+          }
+          await findTasksInColumn(col);
     }
 
     return (

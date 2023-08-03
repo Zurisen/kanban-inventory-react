@@ -1,10 +1,9 @@
 import React, { useEffect, useState } from "react";
-import { useDispatch, useSelector } from "react-redux";
-import boardsSlice from "../../redux/boardSlice";
 import Task from "./Task";
 import AddTaskModal from "./AddTaskModal";
+import axios from "axios";
 
-function Column({ colIndex }) {
+function Column({ colIndex, col }) {
   const colors = [
     "bg-red-500",
     "bg-orange-500",
@@ -17,39 +16,60 @@ function Column({ colIndex }) {
     "bg-sky-500",
   ];
 
-  const dispatch = useDispatch();
-  const [color, setColor] = useState(null)
-  const boards = useSelector((state) => state.boards);
-  const board = boards.find((board) => board.isActive === true);
-  const col = board.columns.find((col, i) => i === colIndex);
   const [isAddTaskModalOpen, setIsAddTaskModalOpen] = useState(false);
+  const [tasks, setTasks] = useState([]);
 
-  const handleOnDrop = (e) => {
-    const { prevColIndex, taskIndex } = JSON.parse(
-      e.dataTransfer.getData("text")
-    );
-
-    if (colIndex !== prevColIndex) {
-      dispatch(
-        boardsSlice.actions.dragTask({ colIndex, prevColIndex, taskIndex })
-      );
+  async function findTasksInColumn(columnName){
+    try {
+      const response = await axios.get('http://localhost:3000/boards');
+      console.log('Response:', response.data);
+      const boards = response.data;
+      const board = boards.find((board) => board.name === 'Projects');
+      if (!board) {
+        setTasks([]);
+      }
+  
+      const column = board.columns.find((column) => column.name === columnName);
+      if (!column) {
+        setTasks([]);
+      }
+  
+      setTasks(column.tasks);
+    } catch (error) {
+      console.error('Error fetching data:', error);
+      setTasks([]);
     }
   };
 
-  const handleOnDragOver = (e) => {
-    e.preventDefault();
-  };
+  //findTasksInColumn(col);
+  useEffect(() => {
+    findTasksInColumn(col); // Fetch all products initially
+  }, []);  
+  
+  // const handleOnDrop = (e) => {
+  //   const { prevColIndex, taskIndex } = JSON.parse(
+  //     e.dataTransfer.getData("text")
+  //   );
+
+  //   if (col !== prevCol) {
+  //     dispatch(
+  //       boardsSlice.actions.dragTask({ colIndex, prevColIndex, taskIndex })
+  //     );
+  //   }
+  // };
+
+  // const handleOnDragOver = (e) => {
+  //   e.preventDefault();
+  // };
 
   return (
 
     <div
-      onDrop={handleOnDrop}
-      onDragOver={handleOnDragOver}
       className="scrollbar-hide   mx-2 pt-[50px] min-w-[280px] "
     >
       <p className=" font-semibold flex items-center  gap-2 tracking-widest md:tracking-[.2em] text-[#828fa3]">
         <div className={`rounded-full w-4 h-4 ${colors[1]} `} />
-        {col.name} ({col.tasks.length})
+        {col} ({tasks.length})
         <button         
         onClick={() => {
           setIsAddTaskModalOpen(true);
@@ -59,11 +79,11 @@ function Column({ colIndex }) {
         </button>
       </p>
       {isAddTaskModalOpen && (
-        <AddTaskModal colIndex={colIndex} setIsAddTaskModalOpen={setIsAddTaskModalOpen}/>
+        <AddTaskModal colIndex={colIndex} col={col} setIsAddTaskModalOpen={setIsAddTaskModalOpen} findTasksInColumn={findTasksInColumn}/>
       )}
 
-      {col.tasks.map((task, index) => (
-        <Task key={index} taskIndex={index} colIndex={colIndex} />
+      {tasks.map((task, index) => (
+        <Task key={index} taskIndex={index} task={task} col={col} />
       ))}
     </div>
   );

@@ -3,14 +3,6 @@ import { useDispatch, useSelector } from "react-redux";
 import boardsSlice from "../../redux/boardSlice";
 
 function EditTaskModal({ taskIndex, colIndex, setIsTaskModalOpen }) {
-    const dispatch = useDispatch();
-    const boards = useSelector((state) => state.boards);
-    const board = boards.find((board) => board.isActive === true);
-    const columns = board.columns;
-    const col = columns.find((col, i) => i === colIndex);
-    const task = col.tasks.find((task, i) => i === taskIndex);
-
-
     // const [status, setStatus] = useState(task.status);
     // const [newColIndex, setNewColIndex] = useState(columns.indexOf(col));
     // const onChange = (e) => {
