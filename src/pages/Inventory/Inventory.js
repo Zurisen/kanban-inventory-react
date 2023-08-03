@@ -3,7 +3,7 @@ import DefaultTable from '../../components/Inventory/DefaultTable';
 import { useState, useEffect } from 'react';
 import SearchBar from '../../components/Inventory/SearchBar';
 import AddProduct from '../../components/Inventory/AddProduct';
-import { filter } from 'lodash';
+import { firestore } from '../../lib/firebase';
 
 export const Inventory = () => {
     const [products, setProducts] = useState([]);
@@ -11,15 +11,20 @@ export const Inventory = () => {
 
   // Move the filterProducts function and useEffect to the Inventory component
     async function filterProducts(searchQuery) {
-      const response = await fetch("http://localhost:3000/products");
-      const data = await response.json();
+      try {
+        const productsRef = firestore.collection('products');
 
-      // Filter the products based on the user's search query
-      const filteredProducts = data.filter((product) => {
-          // Implement your filtering logic here
+        // Fetch all documents from the 'products' collection
+        const snapshot = await productsRef.get();
+    
+        // Extract the data from the snapshot
+        const data = snapshot.docs.map((doc) => doc.data());
+        console.log(data);
+
+        // Filter the products based on the user's search query
+        const filteredProducts = data.filter((product) => {
           const lowerCaseSearchQuery = searchQuery.toLowerCase();
-
-          // Check if the search query matches any part of the attributes
+    
           return (
             product.name.toLowerCase().includes(lowerCaseSearchQuery) ||
             product.serial.toString().toLowerCase().includes(lowerCaseSearchQuery) ||
@@ -27,18 +32,21 @@ export const Inventory = () => {
             product.location.toLowerCase().includes(lowerCaseSearchQuery) ||
             product.state.toLowerCase().includes(lowerCaseSearchQuery)
           );
-      });
-      
-      // Convert the lastModified strings to Date objects
-      filteredProducts.forEach((product) => {
-        product.lastModified = new Date(product.lastModified).toLocaleString(); // Convert to a string in desired format
-      });
-
-      // Sort the filtered products by lastModified in descending order
-      filteredProducts.sort((a, b) => new Date(b.lastModified) - new Date(a.lastModified));
-
-      setProducts(filteredProducts);
-      setItemsFound(filteredProducts.length);
+        });
+    
+        // Convert the lastModified strings to Date objects
+        filteredProducts.forEach((product) => {
+          product.lastModified = new Date(product.lastModified).toLocaleString(); // Convert to a string in the desired format
+        });
+    
+        // Sort the filtered products by lastModified in descending order
+        filteredProducts.sort((a, b) => new Date(b.lastModified) - new Date(a.lastModified));
+    
+        setProducts(filteredProducts);
+        setItemsFound(filteredProducts.length);
+      } catch (error) {
+        console.error("Error filtering products:", error);
+      }
     }
 
 

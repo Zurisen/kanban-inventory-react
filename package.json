@@ -23,7 +23,10 @@
     "react-scripts": "5.0.1",
     "react-zlib-js": "^1.0.5",
     "redux": "^4.2.1",
-    "web-vitals": "^2.1.4"
+    "web-vitals": "^2.1.4",
+    "firebase": "^8.2.1",
+    "react-firebase-hooks": "^2.2.0"
+
   },
   "scripts": {
     "start": "react-scripts start",

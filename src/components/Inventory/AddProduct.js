@@ -1,6 +1,8 @@
 import React from "react";
 import { useState } from "react";
-
+import { firestore } from '../../lib/firebase';
+import firebase
+ from "firebase";
 export default function AddProduct({filterProducts}) {
   const [showModal, setShowModal] = React.useState(false);
 
@@ -21,21 +23,31 @@ export default function AddProduct({filterProducts}) {
   async function handleInsertProductDB(event) {
     event.preventDefault();
     try {
-      const response = await fetch('http://localhost:3000/products', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(newProduct),
-      });
-      filterProducts('');
+      // Create a reference to the "products" collection
+      const productsRef = firestore.collection('products');
 
-      if (!response.ok) {
-        setResponseLog('❌ Failed to add product.');
+      // Check if a document with the same serial already exists
+      const existingProductSnapshot = await productsRef.doc(newProduct.serial).get();
+
+      if (existingProductSnapshot.exists) {
+        setResponseLog('❌ Error: Serial number is already in use.');
+        return; // Exit the function without adding the product
       }
-  
-      const addedProduct = await response.json();
-      setResponseLog('✅ New product added:  ' + `[${newProduct.serial}]`+newProduct.name);
+
+      // Prepare the new product data to be added to Firestore
+      const newProductData = {
+        name: newProduct.name,
+        serial: newProduct.serial,
+        category: newProduct.category,
+        location: newProduct.location,
+        lastModified: firebase.firestore.Timestamp.now(), // Use Firestore timestamp
+        state: 'In Stock',
+      };
+
+      // Set the new product data with the "serial" as the document ID
+      await productsRef.doc(newProduct.serial).set(newProductData);
+
+      // Clear the form fields and reset the newProduct state
       setNewProduct({
         name: '',
         serial: '',
@@ -43,12 +55,14 @@ export default function AddProduct({filterProducts}) {
         location: '',
         lastModified: utcTimestamp,
         state: 'In Stock',
-      })
-      return addedProduct;
+      });
+
+      setResponseLog('✅ New product added: ' + `[${newProductData.serial}] ` + newProduct.name);
     } catch (error) {
-        setResponseLog('❌ Serial number is repeated!');
-      return null;
+      setResponseLog('❌ Error adding product: ' + error.message);
     }
+    filterProducts('');
+
   }
 
   const handleInputChange = (event) => {
