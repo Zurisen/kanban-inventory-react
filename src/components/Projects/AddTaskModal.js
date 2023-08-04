@@ -1,8 +1,7 @@
 import React, { useState } from "react";
-import boardsSlice from "../../redux/boardSlice";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
-import axios from "axios";
+import { firestore } from "../../lib/firebase";
 
 function AddTaskModal({colIndex, col, setIsAddTaskModalOpen, findTasksInColumn}) {
 
@@ -12,9 +11,10 @@ function AddTaskModal({colIndex, col, setIsAddTaskModalOpen, findTasksInColumn})
     const [description, setDescription] = useState('');
     const [location, setLocation] = useState('');
 
-    const [date, setDate] = useState(new Date());
+    //const [date, setDate] = useState(new Date());
     const [startDate, setStartDate] = useState();
     const [endDate, setEndDate] = useState();
+    const [responseLog, setResponseLog] = useState('')
 
     const onChangeDate = (range) => {
         const [startDate, endDate] = range;
@@ -23,23 +23,43 @@ function AddTaskModal({colIndex, col, setIsAddTaskModalOpen, findTasksInColumn})
     };
 
 
-    async function onSubmit(event)  {
+    async function handleInsertProjectDB(event)  {
         event.preventDefault();
-        const newProduct = JSON.stringify({
-            "title": title,
-            "company": company,
-            "startDate": "d",
-            "endDate": "d",
-            "description": description,
-            "location": location
-          })
         try {
-            const response = await axios.get(`http://localhost:3000/boards`, newProduct);
-            console.log(response);
-          } catch (error) {
-            console.error('Error adding task:', error);
-          }
-          await findTasksInColumn(col);
+            const projectsRef = firestore.collection(col);
+            
+            // TODO: loop over all the databases searching for it
+            const existingProjectSnapshot = await projectsRef.doc(title).get();
+            if (existingProjectSnapshot.exists) {
+                setResponseLog('❌ Error: Project Code is already in use.');
+                return; // Exit the function without adding the product
+            }
+
+            const newProjectData = {
+                company: company,
+                description: description,
+                location: location,
+                startDate: startDate,
+                endDate: endDate
+            }
+
+            await projectsRef.doc(title).set(newProjectData);
+
+            await findTasksInColumn(col);
+            setResponseLog('✅ New project added: ' + title );
+
+            setTitle('');
+            setCompany('');
+            setDescription('');
+            setLocation('');
+            setStartDate();
+            setEndDate('');
+
+        } catch (error) {
+            setResponseLog('❌ Error adding prooject: ' + error.message);
+        }
+
+        
     }
 
     return (
@@ -62,7 +82,7 @@ function AddTaskModal({colIndex, col, setIsAddTaskModalOpen, findTasksInColumn})
                 {/*body*/}
                 <div className="relative p-6 flex-auto text-slate-800 dark:text-gray-200">
 
-                <form  onSubmit={onSubmit}>
+                <form  onSubmit={handleInsertProjectDB}>
 
                     <div className="grid md:grid-cols-2 md:gap-6">
                         <div className="relative z-0 w-full mb-6 group">
@@ -104,6 +124,10 @@ function AddTaskModal({colIndex, col, setIsAddTaskModalOpen, findTasksInColumn})
                     <div className="relative z-0 w-full mb-6 group">
                         <input type="text" name="serials" id="serials" value={null} onChange={null} className="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer" placeholder=" " required />
                         <label for="serials" className="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:left-0 peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">Products (by Serial Number)</label>
+                    </div>
+
+                    <div className="p-2 mb-3">
+                    {responseLog}
                     </div>
 
                     <button dir="ltr" type="submit" className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"

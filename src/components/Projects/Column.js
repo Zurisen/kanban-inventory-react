@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import Task from "./Task";
 import AddTaskModal from "./AddTaskModal";
-import axios from "axios";
+import { firestore } from "../../lib/firebase";
 
 function Column({ colIndex, col }) {
   const colors = [
@@ -19,27 +19,27 @@ function Column({ colIndex, col }) {
   const [isAddTaskModalOpen, setIsAddTaskModalOpen] = useState(false);
   const [tasks, setTasks] = useState([]);
 
-  async function findTasksInColumn(columnName){
+  async function findTasksInColumn(col) {
     try {
-      const response = await axios.get('http://localhost:3000/boards');
-      console.log('Response:', response.data);
-      const boards = response.data;
-      const board = boards.find((board) => board.name === 'Projects');
-      if (!board) {
-        setTasks([]);
-      }
+      const colRef = firestore.collection(col);
   
-      const column = board.columns.find((column) => column.name === columnName);
-      if (!column) {
-        setTasks([]);
-      }
+      // Use onSnapshot for real-time updates
+      colRef.onSnapshot((snapshot) => {
+        const data = snapshot.docs.map((doc) => doc.data());
+        console.log(data);
   
-      setTasks(column.tasks);
+        // Check if there are no documents in the collection
+        if (data.length === 0) {
+          setTasks([]);
+        } else {
+          setTasks(data);
+        }
+      });
     } catch (error) {
       console.error('Error fetching data:', error);
       setTasks([]);
     }
-  };
+  }
 
   //findTasksInColumn(col);
   useEffect(() => {
