@@ -1,8 +1,8 @@
 import React from "react";
 import { useState } from "react";
 import { firestore } from '../../lib/firebase';
-import firebase
- from "firebase";
+import firebase from "firebase";
+
 export default function AddProduct({filterProducts}) {
   const [showModal, setShowModal] = React.useState(false);
 
