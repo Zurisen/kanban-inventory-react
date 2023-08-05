@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { firestore } from "../../lib/firebase";
@@ -16,6 +16,19 @@ function AddTaskModal({colIndex, col, setIsAddTaskModalOpen, findTasksInColumn})
     const [startDate, setStartDate] = useState();
     const [endDate, setEndDate] = useState();
     const [responseLog, setResponseLog] = useState('')
+
+    const [snapshot, setSnapshot] = useState();
+    const [searchedProducts, setSearchedProducts] = useState([]);
+
+    // Fetch snapshot of db for quick search of items
+    useEffect(() => {
+        const fetchProductsSnapshot = async () => {
+            const productsRef = firestore.collection('products');
+            const snapshot = await productsRef.get();
+            setSnapshot(snapshot);
+        }
+        fetchProductsSnapshot();
+    }, [])
 
     const onChangeDate = (range) => {
         const [startDate, endDate] = range;
@@ -123,7 +136,7 @@ function AddTaskModal({colIndex, col, setIsAddTaskModalOpen, findTasksInColumn})
                             <input onChange={(e) => setDescription(e.target.value)} type="text" name="description" id="description" value={description} className="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer" placeholder=" " required />
                             <label for="description" className="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:left-0 peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">Description</label>
                     </div>
-                    <AddProductToTask/>
+                    <AddProductToTask searchedProducts={searchedProducts} setSearchedProducts={setSearchedProducts} snapshot={snapshot}/>
                     <div className="p-2 mb-3">
                     {responseLog}
                     </div>

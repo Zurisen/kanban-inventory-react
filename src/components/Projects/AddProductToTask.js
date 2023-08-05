@@ -3,37 +3,33 @@ import { SearchedProduct } from './SearchedProduct';
 import { firestore } from '../../lib/firebase';
 import { debounce } from 'lodash';
 import { SUGGEST_TO_CONTAIN_EQUAL } from 'jest-matcher-utils';
+import ShowTaskProductsDropwdown from './ShowTaskProductsDropwdown';
 
-export const AddProductToTask = () => {
-    const [searchedProducts, setSearchedProducts] = useState([]);
-    //const [snapshot, setSnapshot] = useState();
+export const AddProductToTask = ({searchedProducts, setSearchedProducts, snapshot}) => {
+    const [searchQuery, setSearchQuery] = useState('')
     const [searchResults, setSearchResults] = useState([]);
+    const [showProductsSelect, setShowProductsSelect] = useState(false);
 
-    // useEffect(() => {
-    //     const fetchProductsSnapshot = async () => {
-    //         const productsRef = firestore.collection('products');
-    //         const snapshot = await productsRef.get();
-    //         setSnapshot(snapshot);
-    //     }
-    // }, [])
+    const handleSearch = async (event) => {
+        setSearchQuery(event.target.value);
 
-
-    const handleSearch = debounce(async (event) => {
-        const searchQuery = event.target.value;
         // Extract the data from the snapshot
-        const productsRef = firestore.collection('products');
-        const snapshot = await productsRef.get();
         const data = snapshot.docs.map((doc) => doc.data());
         console.log(data);
 
         // Filter the products based on the user's search query
         const filteredProducts = data.filter((product) => {
-        const lowerCaseSearchQuery = searchQuery.toLowerCase();
+            const lowerCaseSearchQuery = searchQuery.toLowerCase();
 
-        return (
-            product.name.toLowerCase().includes(lowerCaseSearchQuery) ||
-            product.serial.toString().toLowerCase().includes(lowerCaseSearchQuery)
-        );
+            // Check if the product has already been searched
+            const isAlreadySearched = searchedProducts.includes(product.serial);
+
+            // Check if the search query matches the product name or serial and if it's not already searched
+            return (
+            !isAlreadySearched &&
+            (product.name.toLowerCase().includes(lowerCaseSearchQuery) ||
+                product.serial.toString().toLowerCase().includes(lowerCaseSearchQuery))
+            );
         });
         // Convert the lastModified strings to Date objects
         filteredProducts.forEach((product) => {
@@ -44,15 +40,15 @@ export const AddProductToTask = () => {
         filteredProducts.sort((a, b) => new Date(b.lastModified) - new Date(a.lastModified));
     
         setSearchResults(filteredProducts);
+        setShowProductsSelect(true);
+    };
 
-    }, 500);
-
-    const handleEnter = (event) => {
+    const handleProductOnClick = (event, serial) => {
         event.preventDefault();
-        const serial = event.target.value.trim();
         if (serial !== '') {
         setSearchedProducts([...searchedProducts, serial]);
-        event.target.value = '';
+        setShowProductsSelect(false);
+        setSearchQuery('');
         setSearchResults('');
         }
     };
@@ -60,6 +56,14 @@ export const AddProductToTask = () => {
     const handleDelete = (serialToDelete) => {
         const updatedProducts = searchedProducts.filter((serial) => serial !== serialToDelete);
         setSearchedProducts(updatedProducts);
+    };
+
+
+    const handleKeyDown = (event) => {
+        if (event.key === 'Enter') {
+          event.preventDefault(); // Prevent default form submission
+          // Your custom handling logic here
+        }
     };
 
     return (
@@ -88,23 +92,21 @@ export const AddProductToTask = () => {
             <input
             type="search"
             id="default-search"
-            className="block w-full p-2 pl-10 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+            value={searchQuery}
+            className="block w-full p-2 pl-10 text-sm text-gray-900 border border-gray-300 rounded-lg bg-transparent focus:ring-blue-500 focus:border-blue-500 dark:bg-transparent dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
             placeholder="Search products by Serial Number..."
             required
             onChange={handleSearch}
-            onKeyDown={(event) => {
-                if (event.key === 'Enter') {
-                handleEnter(event);
-                }
-            }}
+            onKeyDown={handleKeyDown} 
             />
         </div>
+        {showProductsSelect && <ShowTaskProductsDropwdown searchResults={searchResults} handleProductOnClick={handleProductOnClick}/>}
+
         <div className='flex flex-wrap'>
             {searchedProducts.map((serial, index) => (
             <SearchedProduct key={index} serial={serial} onDelete={handleDelete} />
             ))}
         </div>
-        <div className='text-sm'>{ searchResults!='' && `[${searchResults[0].serial}] ${searchResults[0].name}`}</div>
         </form>
     );
 };
