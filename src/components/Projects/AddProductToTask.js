@@ -1,32 +1,28 @@
 import React, { useEffect, useState } from 'react';
 import { SearchedProduct } from './SearchedProduct';
-import { firestore } from '../../lib/firebase';
-import { debounce } from 'lodash';
-import { SUGGEST_TO_CONTAIN_EQUAL } from 'jest-matcher-utils';
 import ShowTaskProductsDropwdown from './ShowTaskProductsDropwdown';
+import { firestore } from '../../lib/firebase';
 
-export const AddProductToTask = ({searchedProducts, setSearchedProducts, snapshot}) => {
+export const AddProductToTask = ({col, searchedProducts, setSearchedProducts, snapshot}) => {
     const [searchQuery, setSearchQuery] = useState('')
     const [searchResults, setSearchResults] = useState([]);
     const [showProductsSelect, setShowProductsSelect] = useState(false);
 
-    const handleSearch = async (event) => {
-        setSearchQuery(event.target.value);
-
+    const checkSearchResultsInDB = async (snapshot) => {
         // Extract the data from the snapshot
         const data = snapshot.docs.map((doc) => doc.data());
         console.log(data);
 
         // Filter the products based on the user's search query
         const filteredProducts = data.filter((product) => {
-            const lowerCaseSearchQuery = searchQuery.toLowerCase();
+            const lowerCaseSearchQuery = searchQuery.toLowerCase().trim();
 
             // Check if the product has already been searched
             const isAlreadySearched = searchedProducts.includes(product.serial);
 
             // Check if the search query matches the product name or serial and if it's not already searched
             return (
-            !isAlreadySearched &&
+            (!isAlreadySearched && lowerCaseSearchQuery!=='' && product.serial=='In Stock') &&
             (product.name.toLowerCase().includes(lowerCaseSearchQuery) ||
                 product.serial.toString().toLowerCase().includes(lowerCaseSearchQuery))
             );
@@ -41,16 +37,21 @@ export const AddProductToTask = ({searchedProducts, setSearchedProducts, snapsho
     
         setSearchResults(filteredProducts);
         setShowProductsSelect(true);
+    }
+
+    useEffect(() => {
+        searchQuery!= '' && checkSearchResultsInDB(snapshot);
+    }, [searchQuery]);
+
+    const handleSearch = async (event) => {
+        setSearchQuery(event.target.value);
     };
 
     const handleProductOnClick = (event, serial) => {
-        event.preventDefault();
-        if (serial !== '') {
         setSearchedProducts([...searchedProducts, serial]);
         setShowProductsSelect(false);
         setSearchQuery('');
         setSearchResults('');
-        }
     };
 
     const handleDelete = (serialToDelete) => {
@@ -66,8 +67,9 @@ export const AddProductToTask = ({searchedProducts, setSearchedProducts, snapsho
         }
     };
 
+
     return (
-        <form>
+        <form onSubmit>
         <label htmlFor="default-search" className="mb-2 text-sm font-medium text-gray-900 sr-only dark:text-white">
             Search
         </label>
@@ -96,6 +98,7 @@ export const AddProductToTask = ({searchedProducts, setSearchedProducts, snapsho
             className="block w-full p-2 pl-10 text-sm text-gray-900 border border-gray-300 rounded-lg bg-transparent focus:ring-blue-500 focus:border-blue-500 dark:bg-transparent dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
             placeholder="Search products by Serial Number..."
             required
+            on
             onChange={handleSearch}
             onKeyDown={handleKeyDown} 
             />

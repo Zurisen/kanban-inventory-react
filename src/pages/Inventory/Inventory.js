@@ -7,6 +7,7 @@ import { firestore } from '../../lib/firebase';
 import { debounce } from 'lodash';
 
 export const Inventory = () => {
+    const [searchQuery, setSearchQuery] = useState('');
     const [products, setProducts] = useState([]);
     const [itemsFound, setItemsFound] = useState(0);
 
@@ -50,16 +51,9 @@ export const Inventory = () => {
         }
     }, 500);
 
-
-
     useEffect(() => {
-      filterProducts(''); // Fetch all products initially
-    }, []);
-
-  
-    const handleSearchInputChange = (input) => {
-      filterProducts(input); // Call filterProducts with the user's search input
-    };
+      filterProducts(searchQuery); // Fetch all products initially
+    }, [searchQuery]);
 
     return (
 
@@ -69,7 +63,7 @@ export const Inventory = () => {
           {/* Add product Button & Search Bar */}
           <div style={{ display: 'grid', gridTemplateColumns: 'auto 1fr', gap: '8px' }}>
             <AddProduct filterProducts={filterProducts}/>
-            <SearchBar onChangeCallback={handleSearchInputChange} itemsFound={itemsFound}/>
+            <SearchBar itemsFound={itemsFound} setSearchQuery={setSearchQuery}/>
           </div>
 
           {/* Products Table */}

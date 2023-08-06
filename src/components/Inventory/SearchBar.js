@@ -1,11 +1,11 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { debounce } from 'lodash';
 
-export const SearchBar = ({onChangeCallback, itemsFound}) => {
+export const SearchBar = ({itemsFound, setSearchQuery}) => {
 
     const onChange = debounce((event) => {
         const input = event.target.value;
-        onChangeCallback(input); // Pass the search input back to the Inventory component
+        setSearchQuery(input);
       }, 500);
 
     return (

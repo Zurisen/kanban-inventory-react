@@ -58,11 +58,24 @@ function AddTaskModal({colIndex, col, setIsAddTaskModalOpen, findTasksInColumn})
                 endDate: endDate
             }
 
+            // Batch write the state of the products added to the db
+            const batch = firestore.batch();
+            const collectionRef = firestore.collection('products');
+            // Loop through the searchResults and create update operations for each document
+            searchedProducts.forEach((serial) => {
+                const docRef = collectionRef.doc(serial);
+                batch.update(docRef, { state: col , project: title});
+            });
+      
+            // Commit the batch write to update all product documents in a single batch operation
+            await batch.commit();
+            // Commit the new project to the projects doc db
             await projectsRef.doc(title).set(newProjectData);
 
+            // Refresh the projects
             await findTasksInColumn(col);
             setResponseLog('✅ New project added: ' + title );
-
+            // Reset form
             setTitle('');
             setCompany('');
             setDescription('');
@@ -74,7 +87,6 @@ function AddTaskModal({colIndex, col, setIsAddTaskModalOpen, findTasksInColumn})
             setResponseLog('❌ Error adding prooject: ' + error.message);
         }
 
-        
     }
 
     return (
@@ -136,13 +148,13 @@ function AddTaskModal({colIndex, col, setIsAddTaskModalOpen, findTasksInColumn})
                             <input onChange={(e) => setDescription(e.target.value)} type="text" name="description" id="description" value={description} className="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer" placeholder=" " required />
                             <label for="description" className="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:left-0 peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">Description</label>
                     </div>
-                    <AddProductToTask searchedProducts={searchedProducts} setSearchedProducts={setSearchedProducts} snapshot={snapshot}/>
+                    <AddProductToTask col={col} searchedProducts={searchedProducts} setSearchedProducts={setSearchedProducts} snapshot={snapshot}/>
                     <div className="p-2 mb-3">
                     {responseLog}
                     </div>
 
                     <button dir="ltr" type="submit" className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
-                    >Add</button>
+                    >Create</button>
 
                     <button
                         dir="rtl"
