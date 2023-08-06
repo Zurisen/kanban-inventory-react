@@ -105,7 +105,7 @@ export const AddProductToTask = ({col, searchedProducts, setSearchedProducts, sn
         {showProductsSelect && <ShowTaskProductsDropwdown searchResults={searchResults} handleProductOnClick={handleProductOnClick}/>}
 
         <div className='flex flex-wrap'>
-            {searchedProducts.map((serial, index) => (
+            {searchedProducts.length>0 && searchedProducts.map((serial, index) => (
             <SearchedProduct key={index} serial={serial} onDelete={handleDelete} />
             ))}
         </div>

@@ -21,12 +21,12 @@ function AddTaskModal({colIndex, col, setIsAddTaskModalOpen, findTasksInColumn})
     const [searchedProducts, setSearchedProducts] = useState([]);
 
     // Fetch snapshot of db for quick search of items
+    const fetchProductsSnapshot = async () => {
+        const productsRef = firestore.collection('products');
+        const snapshot = await productsRef.get();
+        setSnapshot(snapshot);
+    }
     useEffect(() => {
-        const fetchProductsSnapshot = async () => {
-            const productsRef = firestore.collection('products');
-            const snapshot = await productsRef.get();
-            setSnapshot(snapshot);
-        }
         fetchProductsSnapshot();
     }, [])
 
@@ -75,6 +75,7 @@ function AddTaskModal({colIndex, col, setIsAddTaskModalOpen, findTasksInColumn})
             // Refresh the projects
             await findTasksInColumn(col);
             setResponseLog('✅ New project added: ' + title );
+
             // Reset form
             setTitle('');
             setCompany('');
@@ -82,6 +83,8 @@ function AddTaskModal({colIndex, col, setIsAddTaskModalOpen, findTasksInColumn})
             setLocation('');
             setStartDate();
             setEndDate('');
+            setSearchedProducts([]);
+            fetchProductsSnapshot();
 
         } catch (error) {
             setResponseLog('❌ Error adding prooject: ' + error.message);
