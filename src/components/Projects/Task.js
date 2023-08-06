@@ -3,13 +3,13 @@ import EditTaskModal from "./EditTaskModal";
 
 function Task({ colIndex, taskIndex, task }) {
 
-  const [isTaskModalOpen, setIsTaskModalOpen] = useState(false);
+  const [isEditTaskModalOpen, setIsEditTaskModalOpen] = useState(false);
 
   return (
     <div>
       <div
         onClick={() => {
-          setIsTaskModalOpen(true);
+          setIsEditTaskModalOpen(true);
         }}
         draggable
         className=" w-[280px] first:my-5 rounded-lg  bg-white  dark:bg-[#2b2c37] shadow-[#364e7e1a] py-3 px-3 shadow-lg hover:text-[#635fc7] dark:text-white dark:hover:text-[#635fc7] cursor-pointer "
@@ -21,11 +21,11 @@ function Task({ colIndex, taskIndex, task }) {
         </p>
 
       </div>
-      {isTaskModalOpen && (
+      {isEditTaskModalOpen && (
         <EditTaskModal
           col={colIndex}
-          task={taskIndex}
-          setIsTaskModalOpen={setIsTaskModalOpen}
+          task={task}
+          setIsEditTaskModalOpen={setIsEditTaskModalOpen}
         />
       )}
         
