@@ -11,7 +11,6 @@ export const AddProductToTask = ({col, searchedProducts, setSearchedProducts, sn
     const checkSearchResultsInDB = async (snapshot) => {
         // Extract the data from the snapshot
         const data = snapshot.docs.map((doc) => doc.data());
-        console.log(data);
 
         // Filter the products based on the user's search query
         const filteredProducts = data.filter((product) => {
@@ -19,10 +18,10 @@ export const AddProductToTask = ({col, searchedProducts, setSearchedProducts, sn
 
             // Check if the product has already been searched
             const isAlreadySearched = searchedProducts.includes(product.serial);
-
+            
             // Check if the search query matches the product name or serial and if it's not already searched
             return (
-            (!isAlreadySearched && lowerCaseSearchQuery!=='' && product.serial=='In Stock') &&
+            (!isAlreadySearched && lowerCaseSearchQuery!=='' && product.state=='In Stock') &&
             (product.name.toLowerCase().includes(lowerCaseSearchQuery) ||
                 product.serial.toString().toLowerCase().includes(lowerCaseSearchQuery))
             );
