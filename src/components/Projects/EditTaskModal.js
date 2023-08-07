@@ -13,8 +13,8 @@ function EditTaskModal({colIndex, col, task, setIsEditTaskModalOpen, findTasksIn
     const [location, setLocation] = useState(task.location);
 
     //const [date, setDate] = useState(new Date());
-    const [startDate, setStartDate] = useState();
-    const [endDate, setEndDate] = useState();
+    const [startDate, setStartDate] = useState(task.startDate.toDate());
+    const [endDate, setEndDate] = useState(task.endDate.toDate());
     const [responseLog, setResponseLog] = useState('')
 
     const [snapshot, setSnapshot] = useState();
@@ -62,35 +62,31 @@ function EditTaskModal({colIndex, col, task, setIsEditTaskModalOpen, findTasksIn
             const batch = firestore.batch();
             const collectionRef = firestore.collection('products');
             // Loop through the searchResults and create update operations for each document
-            deletedProducts.forEach((serial) => {
-                const docRef = collectionRef.doc(serial);
-                batch.update(docRef, { state: "In Stock" , project: ""});
-            });
+            if (deletedProducts.length>0) {
+                deletedProducts.forEach((serial) => {
+                    const docRef = collectionRef.doc(serial);
+                    batch.update(docRef, { state: "In Stock" , project: ""});
+                });
+            }
 
             // Batch write the state of the products added to the db
             // Loop through the searchResults and create update operations for each document
-            searchedProducts.forEach((serial) => {
-                const docRef = collectionRef.doc(serial);
-                batch.update(docRef, { state: col , project: title});
-            });
+            if (searchedProducts.length>0) {
+                searchedProducts.forEach((serial) => {
+                    const docRef = collectionRef.doc(serial);
+                    batch.update(docRef, { state: col , project: title});
+                });
+            }
       
             // Commit the batch write to update all product documents in a single batch operation
             await batch.commit();
             // Commit the new project to the projects doc db
-            await projectsRef.doc(title).set(newProjectData);
+            await projectsRef.doc(title).update(newProjectData);
 
             // Refresh the projects
             await findTasksInColumn(col);
             setResponseLog('✅ Project Updated');
 
-            // Reset form
-            setTitle('');
-            setCompany('');
-            setDescription('');
-            setLocation('');
-            setStartDate();
-            setEndDate('');
-            setSearchedProducts([]);
             fetchProductsSnapshot();
 
         } catch (error) {

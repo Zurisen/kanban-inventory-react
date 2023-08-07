@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import EditTaskModal from "./EditTaskModal";
 
-function Task({ colIndex, taskIndex, task }) {
+function Task({ col, colIndex, taskIndex, task, findTasksInColumn}) {
 
   const [isEditTaskModalOpen, setIsEditTaskModalOpen] = useState(false);
 
@@ -23,9 +23,10 @@ function Task({ colIndex, taskIndex, task }) {
       </div>
       {isEditTaskModalOpen && (
         <EditTaskModal
-          col={colIndex}
+          col={col}
           task={task}
           setIsEditTaskModalOpen={setIsEditTaskModalOpen}
+          findTasksInColumn={findTasksInColumn}
         />
       )}
         

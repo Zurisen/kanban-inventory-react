@@ -83,7 +83,7 @@ function Column({ colIndex, col }) {
       )}
 
       {tasks.map((task, index) => (
-        <Task key={index} taskIndex={index} task={task} col={col} />
+        <Task key={index} taskIndex={index} task={task} col={col} findTasksInColumn={findTasksInColumn}/>
       ))}
     </div>
   );
