@@ -3,7 +3,7 @@ import { SearchedProduct } from './SearchedProduct';
 import ShowTaskProductsDropwdown from './ShowTaskProductsDropwdown';
 import { firestore } from '../../lib/firebase';
 
-export const AddProductToTask = ({col, searchedProducts, setSearchedProducts, snapshot}) => {
+export const AddProductToTask = ({col, searchedProducts, setSearchedProducts, deletedProducts, setDeletedProducts, snapshot}) => {
     const [searchQuery, setSearchQuery] = useState('')
     const [searchResults, setSearchResults] = useState([]);
     const [showProductsSelect, setShowProductsSelect] = useState(false);
@@ -56,6 +56,9 @@ export const AddProductToTask = ({col, searchedProducts, setSearchedProducts, sn
     const handleDelete = (serialToDelete) => {
         const updatedProducts = searchedProducts.filter((serial) => serial !== serialToDelete);
         setSearchedProducts(updatedProducts);
+        if (deletedProducts) {
+            setDeletedProducts([...deletedProducts, serialToDelete]);
+        }
     };
 
 

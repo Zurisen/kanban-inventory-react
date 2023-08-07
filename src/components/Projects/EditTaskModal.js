@@ -19,6 +19,7 @@ function EditTaskModal({colIndex, col, task, setIsEditTaskModalOpen, findTasksIn
 
     const [snapshot, setSnapshot] = useState();
     const [searchedProducts, setSearchedProducts] = useState([]);
+    const [deletedProducts, setDeletedProducts] = useState([]);
 
     // Fetch snapshot of db for quick search of items
     const fetchProductsSnapshot = async () => {
@@ -29,16 +30,12 @@ function EditTaskModal({colIndex, col, task, setIsEditTaskModalOpen, findTasksIn
         const projectData = data.filter( (product) => {
             return product.project.includes(title)}
         );
-        projectData.forEach((product) => {
-            setSearchedProducts([...searchedProducts, product.serial])
-        });
-        console.log(projectData);
+        const serials = projectData.map((product) => product.serial);
+        setSearchedProducts(serials);
     }
-
-
     useEffect(() => {
         fetchProductsSnapshot();
-    }, [])
+    }, []);
 
     const onChangeDate = (range) => {
         const [startDate, endDate] = range;
@@ -51,13 +48,6 @@ function EditTaskModal({colIndex, col, task, setIsEditTaskModalOpen, findTasksIn
         event.preventDefault();
         try {
             const projectsRef = firestore.collection(col);
-            
-            // TODO: loop over all the databases searching for it
-            const existingProjectSnapshot = await projectsRef.doc(title).get();
-            if (existingProjectSnapshot.exists) {
-                setResponseLog('❌ Error: Project Code is already in use.');
-                return; // Exit the function without adding the product
-            }
 
             const newProjectData = {
                 projectcode: title,
@@ -68,9 +58,16 @@ function EditTaskModal({colIndex, col, task, setIsEditTaskModalOpen, findTasksIn
                 endDate: endDate
             }
 
-            // Batch write the state of the products added to the db
+            // Batch write the state of the products deleted from the project to the db
             const batch = firestore.batch();
             const collectionRef = firestore.collection('products');
+            // Loop through the searchResults and create update operations for each document
+            deletedProducts.forEach((serial) => {
+                const docRef = collectionRef.doc(serial);
+                batch.update(docRef, { state: "In Stock" , project: ""});
+            });
+
+            // Batch write the state of the products added to the db
             // Loop through the searchResults and create update operations for each document
             searchedProducts.forEach((serial) => {
                 const docRef = collectionRef.doc(serial);
@@ -84,7 +81,7 @@ function EditTaskModal({colIndex, col, task, setIsEditTaskModalOpen, findTasksIn
 
             // Refresh the projects
             await findTasksInColumn(col);
-            setResponseLog('✅ New project added: ' + title );
+            setResponseLog('✅ Project Updated');
 
             // Reset form
             setTitle('');
@@ -161,7 +158,8 @@ function EditTaskModal({colIndex, col, task, setIsEditTaskModalOpen, findTasksIn
                             <input onChange={(e) => setDescription(e.target.value)} type="text" name="description" id="description" value={description} className="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer" placeholder=" " required />
                             <label for="description" className="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:left-0 peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">Description</label>
                     </div>
-                    <AddProductToTask col={col} searchedProducts={searchedProducts} setSearchedProducts={setSearchedProducts} snapshot={snapshot}/>
+                    <AddProductToTask col={col} searchedProducts={searchedProducts} setSearchedProducts={setSearchedProducts} 
+                        deletedProducts={deletedProducts} setDeletedProducts={setDeletedProducts} snapshot={snapshot}/>
                     <div className="p-2 mb-3">
                     {responseLog}
                     </div>
