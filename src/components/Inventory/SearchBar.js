@@ -8,8 +8,14 @@ export const SearchBar = ({itemsFound, setSearchQuery}) => {
         setSearchQuery(input);
       }, 500);
 
+    const handleKeyDown = (event) => {
+        if (event.key === 'Enter') {
+          event.preventDefault(); // Prevent default form submission
+          // Your custom handling logic here
+        }
+    };
     return (
-        <form className="w-full">
+        <form className="w-full" onKeyDown={handleKeyDown}> 
             <div className="flex">
                 {/* The Search Bar */}
                 <label for="default-search" class="mb-2 text-sm font-medium text-gray-900 sr-only dark:text-white">Search</label>

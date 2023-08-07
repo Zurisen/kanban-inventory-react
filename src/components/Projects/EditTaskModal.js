@@ -95,6 +95,32 @@ function EditTaskModal({colIndex, col, task, setIsEditTaskModalOpen, findTasksIn
 
     }
 
+    async function handleDeleteProject (event) {
+        event.preventDefault();
+        try {
+            // Construct the reference to the document to delete
+            const docRef = firestore.collection(col).doc(title);
+
+            // Delete the document and fetch the items linked to that document
+            docRef.delete();
+            fetchProductsSnapshot();
+
+            const batch = firestore.batch();
+            const collectionRef = firestore.collection('products');
+            if (searchedProducts.length>0) {
+                searchedProducts.forEach((serial) => {
+                    const docRef = collectionRef.doc(serial);
+                    batch.update(docRef, { state: "In Stock" , project: ""});
+                });
+            }
+            await batch.commit();
+            await findTasksInColumn(col);
+            setIsEditTaskModalOpen(false);
+        } catch (error) {
+            console.log('Error deleting project' + error.message);
+        }
+    }
+
     return (
         <>
         <div
@@ -106,8 +132,16 @@ function EditTaskModal({colIndex, col, task, setIsEditTaskModalOpen, findTasksIn
                 {/*header*/}
                 <div className="flex items-start justify-between p-5 border-b border-solid border-slate-200 rounded-t">
                 <h3 className="text-2xl font-semibold">
-                    Create Project
+                    Edit Project
                 </h3>
+                <button
+                        dir="rtl"
+                        className="text-red-500 background-transparent font-bold uppercase px-6 py-2 text-sm outline-none focus:outline-none mr-1 mb-1 ease-linear transition-all duration-150 absolute right-0"
+                        type="button"
+                        onClick={handleDeleteProject}
+                        >
+                        Delete
+                </button>  
 
 
 
