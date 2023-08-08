@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import Task from "./Task";
 import AddTaskModal from "./AddTaskModal";
 import { firestore } from "../../lib/firebase";
-import { useDrop } from "react-dnd";
+import { shuffle } from "lodash";
 
 function Column({ colIndex, col }) {
   const colors = [
@@ -16,21 +16,9 @@ function Column({ colIndex, col }) {
     "bg-pink-500",
     "bg-sky-500",
   ];
-
+  const [color, setColor] = useState(null)
   const [isAddTaskModalOpen, setIsAddTaskModalOpen] = useState(false);
   const [tasks, setTasks] = useState([]);
-
-  const [{ isOver }, drop] = useDrop(() => ({
-    accept: 'Task', // Specify the type of item that can be dropped (PROJECT in this case)
-    drop: (item) => handleDrop(item, col), // Callback function when item is dropped
-    collect: (monitor) => ({
-      isOver: !!monitor.isOver(),
-    }),
-  }));
-
-  const handleDrop = (item, targetCol) => {
-
-  };
 
   async function findTasksInColumn(col) {
     try {
@@ -57,34 +45,41 @@ function Column({ colIndex, col }) {
     }
   }
 
-  //findTasksInColumn(col);
+  useEffect(() => {
+    setColor(shuffle(colors).pop())
+  }, );
+
   useEffect(() => {
     findTasksInColumn(col); // Fetch all products initially
   }, []);  
   
-  // const handleOnDrop = (e) => {
-  //   const { prevColIndex, taskIndex } = JSON.parse(
-  //     e.dataTransfer.getData("text")
-  //   );
+  const handleOnDrop = async (e) => {
+    const { taskIndex, prevColIndex, prevCol, prevColprojectcode } = JSON.parse(
+      e.dataTransfer.getData("text")
+    );
+    console.log(taskIndex, prevColIndex, prevCol, prevColprojectcode);
+    if (colIndex !== prevColIndex) {
+      const projectsRef = firestore.collection("projects");
+      const newProjectData = {
+          state: col
+      }
+      await projectsRef.doc(prevColprojectcode).update(newProjectData);
+    }
+  };
 
-  //   if (col !== prevCol) {
-  //     dispatch(
-  //       boardsSlice.actions.dragTask({ colIndex, prevColIndex, taskIndex })
-  //     );
-  //   }
-  // };
-
-  // const handleOnDragOver = (e) => {
-  //   e.preventDefault();
-  // };
+  const handleOnDragOver = (e) => {
+    e.preventDefault();
+  };
 
   return (
 
-    <div ref={drop}
-      className="scrollbar-hide   mx-2 pt-[50px] min-w-[280px] "
+    <div
+      onDrop={handleOnDrop}
+      onDragOver={handleOnDragOver}
+      className={`scrollbar-hid mx-2 pt-[50px] min-w-[280px]`}
     >
       <p className=" font-semibold flex items-center  gap-2 tracking-widest md:tracking-[.2em] text-[#828fa3]">
-        <div className={`rounded-full w-4 h-4 ${colors[1]} `} />
+        <div className={`rounded-full w-4 h-4 ${color} `} />
         {col} ({tasks.length})
         <button         
         onClick={() => {
@@ -99,7 +94,7 @@ function Column({ colIndex, col }) {
       )}
 
       {tasks.map((task, index) => (
-        <Task key={index} taskIndex={index} task={task} col={col} findTasksInColumn={findTasksInColumn}/>
+        <Task key={index} taskIndex={index} task={task} colIndex={colIndex} col={col} findTasksInColumn={findTasksInColumn}/>
       ))}
     </div>
   );

@@ -1,21 +1,34 @@
-import React from 'react'
+import React, { useState, useEffect } from 'react'
 import Column from '../../components/Projects/Column';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
+import { firestore } from '../../lib/firebase';
 
 export const Projects = () => {
-  return (
-    <DndProvider backend={HTML5Backend}>
-      <div className=" flex p-4 sm:ml-64 bg-slate-200 dark:bg-slate-900">
-        <div className="p-7 py-5 bg-slate-200 dark:bg-slate-900">
-          <Column col={"Rented"} colIndex={0}/>
-        </div>
+  const [projectsCategories, setProjectsCategories] = useState([]);
 
-        <div className="p-7 py-5 bg-slate-200 dark:bg-slate-900">
-          <Column col={"To be Washed"} colIndex={1}/>
-        </div>
+  const handleFindProjectCategories = async () => {
+    const categoriesRef = firestore.collection("projectsCategories");
+    categoriesRef.onSnapshot((snapshot) => {
+      const data = snapshot.docs.map((doc) => doc.id);
+      setProjectsCategories(data);
+    });
+  }
+
+  useEffect(() => {
+    handleFindProjectCategories();
+  }, []);
+
+  return (
+      <div className=" flex p-4 sm:ml-64 bg-slate-200 dark:bg-slate-900">
+
+        {projectsCategories.map((category, index) => (
+          <div className="p-7 py-5 bg-slate-200 dark:bg-slate-900">
+            <Column col={category} colIndex={index}/>
+          </div>
+        ))}
+
       </div> 
-    </DndProvider>
 )
 }
 
