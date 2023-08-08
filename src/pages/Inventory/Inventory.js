@@ -11,13 +11,25 @@ export const Inventory = () => {
   const [products, setProducts] = useState([]);
   const [itemsFound, setItemsFound] = useState(0);
   const [snapshotData, setSnapshotData] = useState([]);
-  
+  const [statesData, setStatesData] = useState([]);
+
   const fetchProductsSnapshot = async () => {
     const productsRef = firestore.collection('products');
     const snapshot = await productsRef.get();
     // Extract the data from the snapshot
     const data = snapshot.docs.map((doc) => doc.data());
     return data;
+  }
+  const fetchProjectsStatesSnapshot = async () => {
+    // Fetch projects to create a dictionary of project IDs and states
+    const projectsSnapshot = await firestore.collection('projects').get();
+    const projectsData = projectsSnapshot.docs.reduce((acc, doc) => {
+      const projectId = doc.id;
+      const projectData = doc.data();
+      acc[projectId] = projectData.state;
+      return acc;
+    }, {});
+    return projectsData;
   }
 
   useEffect(() => {
@@ -26,20 +38,33 @@ export const Inventory = () => {
     }).catch((error) => {
       console.error("Error fetching products:", error);
     });
+
+    fetchProjectsStatesSnapshot().then((data) => {
+      setStatesData(data);
+    }).catch((error) => {
+      console.error("Error fetching projects states:", error);
+    });
   }, []);
   
 
   // Move the filterProducts function and useEffect to the Inventory component
   const filterProducts = async (searchQuery) => {
       try {
+        // Write the state of the products
+        const unfilteredProducts = snapshotData.map((product) => ({
+          ...product,
+          state: statesData[product.project] !== undefined ? statesData[product.project] : "In Stock"
+        }));
+
         // Filter the products based on the user's search query
-        const filteredProducts = snapshotData.filter((product) => {
+        const filteredProducts = unfilteredProducts.filter((product) => {
           const lowerCaseSearchQuery = searchQuery.toLowerCase();
           return (
             product.name.toLowerCase().includes(lowerCaseSearchQuery) ||
             product.serial.toString().includes(lowerCaseSearchQuery) ||
             product.category.toLowerCase().includes(lowerCaseSearchQuery) ||
-            product.location.toLowerCase().includes(lowerCaseSearchQuery)
+            product.location.toLowerCase().includes(lowerCaseSearchQuery) ||
+            product.state.toLowerCase().includes(lowerCaseSearchQuery) 
           );
         });
     
