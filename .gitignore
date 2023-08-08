@@ -24,3 +24,4 @@ yarn-error.log*
 data/db.json
 src/data.json
 src/lib/firebase.js
+.env
