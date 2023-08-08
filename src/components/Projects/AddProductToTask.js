@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { SearchedProduct } from './SearchedProduct';
 import ShowTaskProductsDropwdown from './ShowTaskProductsDropwdown';
-import { firestore } from '../../lib/firebase';
 
 export const AddProductToTask = ({col, searchedProducts, setSearchedProducts, deletedProducts, setDeletedProducts, snapshot}) => {
     const [searchQuery, setSearchQuery] = useState('')
@@ -21,7 +20,7 @@ export const AddProductToTask = ({col, searchedProducts, setSearchedProducts, de
             
             // Check if the search query matches the product name or serial and if it's not already searched
             return (
-            (!isAlreadySearched && lowerCaseSearchQuery!=='' && product.state=='In Stock') &&
+            (!isAlreadySearched && lowerCaseSearchQuery!=='' && product.project==="") &&
             (product.name.toLowerCase().includes(lowerCaseSearchQuery) ||
                 product.serial.toString().toLowerCase().includes(lowerCaseSearchQuery))
             );
@@ -39,7 +38,7 @@ export const AddProductToTask = ({col, searchedProducts, setSearchedProducts, de
     }
 
     useEffect(() => {
-        searchQuery!= '' && checkSearchResultsInDB(snapshot);
+        searchQuery!== '' && checkSearchResultsInDB(snapshot);
     }, [searchQuery]);
 
     const handleSearch = async (event) => {

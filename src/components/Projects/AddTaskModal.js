@@ -40,7 +40,7 @@ function AddTaskModal({colIndex, col, setIsAddTaskModalOpen, findTasksInColumn})
     async function handleInsertProjectDB(event)  {
         event.preventDefault();
         try {
-            const projectsRef = firestore.collection(col);
+            const projectsRef = firestore.collection('projects');
             
             // TODO: loop over all the databases searching for it
             const existingProjectSnapshot = await projectsRef.doc(title).get();
@@ -55,7 +55,8 @@ function AddTaskModal({colIndex, col, setIsAddTaskModalOpen, findTasksInColumn})
                 description: description,
                 location: location,
                 startDate: startDate,
-                endDate: endDate
+                endDate: endDate,
+                state: col
             }
 
             // Batch write the state of the products added to the db
@@ -64,7 +65,7 @@ function AddTaskModal({colIndex, col, setIsAddTaskModalOpen, findTasksInColumn})
             // Loop through the searchResults and create update operations for each document
             searchedProducts.forEach((serial) => {
                 const docRef = collectionRef.doc(serial);
-                batch.update(docRef, { state: col , project: title});
+                batch.update(docRef, {project: title});
             });
       
             // Commit the batch write to update all product documents in a single batch operation

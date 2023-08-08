@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import Task from "./Task";
 import AddTaskModal from "./AddTaskModal";
 import { firestore } from "../../lib/firebase";
+import { useDrop } from "react-dnd";
 
 function Column({ colIndex, col }) {
   const colors = [
@@ -19,20 +20,35 @@ function Column({ colIndex, col }) {
   const [isAddTaskModalOpen, setIsAddTaskModalOpen] = useState(false);
   const [tasks, setTasks] = useState([]);
 
+  const [{ isOver }, drop] = useDrop(() => ({
+    accept: 'Task', // Specify the type of item that can be dropped (PROJECT in this case)
+    drop: (item) => handleDrop(item, col), // Callback function when item is dropped
+    collect: (monitor) => ({
+      isOver: !!monitor.isOver(),
+    }),
+  }));
+
+  const handleDrop = (item, targetCol) => {
+
+  };
+
   async function findTasksInColumn(col) {
     try {
-      const colRef = firestore.collection(col);
+      const colRef = firestore.collection("projects");
   
       // Use onSnapshot for real-time updates
       colRef.onSnapshot((snapshot) => {
         const data = snapshot.docs.map((doc) => doc.data());
-        console.log(data);
-  
+        const assignedProjects = data.filter((project) => {
+          return (
+            project.state.includes(col)
+          )}
+        );
         // Check if there are no documents in the collection
-        if (data.length === 0) {
+        if (assignedProjects.length === 0) {
           setTasks([]);
         } else {
-          setTasks(data);
+          setTasks(assignedProjects);
         }
       });
     } catch (error) {
@@ -64,7 +80,7 @@ function Column({ colIndex, col }) {
 
   return (
 
-    <div
+    <div ref={drop}
       className="scrollbar-hide   mx-2 pt-[50px] min-w-[280px] "
     >
       <p className=" font-semibold flex items-center  gap-2 tracking-widest md:tracking-[.2em] text-[#828fa3]">
