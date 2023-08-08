@@ -3,7 +3,7 @@ import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { firestore } from "../../lib/firebase";
 import AddProductToTask from "./AddProductToTask";
-
+import firebase from "firebase";
 function AddTaskModal({colIndex, col, setIsAddTaskModalOpen, findTasksInColumn}) {
 
     /* form elements */
@@ -65,7 +65,7 @@ function AddTaskModal({colIndex, col, setIsAddTaskModalOpen, findTasksInColumn})
             // Loop through the searchResults and create update operations for each document
             searchedProducts.forEach((serial) => {
                 const docRef = collectionRef.doc(serial);
-                batch.update(docRef, {project: title});
+                batch.update(docRef, {project: title, lastModified: firebase.firestore.Timestamp.now()});
             });
       
             // Commit the batch write to update all product documents in a single batch operation

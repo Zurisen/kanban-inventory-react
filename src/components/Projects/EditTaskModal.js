@@ -3,6 +3,7 @@ import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { firestore } from "../../lib/firebase";
 import AddProductToTask from "./AddProductToTask";
+import firebase from "firebase";
 
 function EditTaskModal({colIndex, col, task, setIsEditTaskModalOpen, findTasksInColumn}) {
 
@@ -65,7 +66,7 @@ function EditTaskModal({colIndex, col, task, setIsEditTaskModalOpen, findTasksIn
             if (deletedProducts.length>0) {
                 deletedProducts.forEach((serial) => {
                     const docRef = collectionRef.doc(serial);
-                    batch.update(docRef, {project: ""});
+                    batch.update(docRef, {project: "", lastModified: firebase.firestore.Timestamp.now()});
                 });
             }
 
@@ -74,7 +75,7 @@ function EditTaskModal({colIndex, col, task, setIsEditTaskModalOpen, findTasksIn
             if (searchedProducts.length>0) {
                 searchedProducts.forEach((serial) => {
                     const docRef = collectionRef.doc(serial);
-                    batch.update(docRef, {project: title});
+                    batch.update(docRef, {project: title, lastModified: firebase.firestore.Timestamp.now()});
                 });
             }
       
@@ -99,7 +100,7 @@ function EditTaskModal({colIndex, col, task, setIsEditTaskModalOpen, findTasksIn
         event.preventDefault();
         try {
             // Construct the reference to the document to delete
-            const docRef = firestore.collection(col).doc(title);
+            const docRef = firestore.collection("projects").doc(title);
 
             // Delete the document and fetch the items linked to that document
             docRef.delete();
