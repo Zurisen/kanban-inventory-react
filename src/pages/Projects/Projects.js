@@ -1,7 +1,5 @@
 import React, { useState, useEffect } from 'react'
 import Column from '../../components/Projects/Column';
-import { DndProvider } from 'react-dnd';
-import { HTML5Backend } from 'react-dnd-html5-backend';
 import { firestore } from '../../lib/firebase';
 
 export const Projects = () => {
