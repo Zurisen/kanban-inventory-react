@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import Column from '../../components/Projects/Column';
 import { firestore } from '../../lib/firebase';
+import toast from 'react-hot-toast';
 
 export const Projects = () => {
   const [projectsCategories, setProjectsCategories] = useState([]);
@@ -32,6 +33,7 @@ export const Projects = () => {
             <Column col={project.category} colIndex={index} columnColor={project.color}/>
           </div>
         ))}
+
 
       </div> 
 )
