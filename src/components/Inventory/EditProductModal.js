@@ -3,14 +3,11 @@ import { useState } from "react";
 import { firestore } from '../../lib/firebase';
 import firebase from "firebase";
 import { getRandomInt } from "../../lib/utils";
+import toast from 'react-hot-toast';
 
 export default function EditProductModal({products, productIndex, setSnapshotsUpdate, searchQuery, setSearchQuery, setShowEditProductModal}) {
 
-  const currentUTCDate = new Date();
-  const utcTimestamp = currentUTCDate.toISOString(); // Convert to UTC string
-
   /* Handle new product creation in DB*/
-  const [responseLog, setResponseLog] = useState('')
   const [newProduct, setNewProduct] = useState({
     name: products[productIndex].name,
     serial: products[productIndex].serial,
@@ -35,9 +32,9 @@ export default function EditProductModal({products, productIndex, setSnapshotsUp
       // Set the new product data with the "serial" as the document ID
       await productsRef.doc(products[productIndex].serial).update(newProductData);
 
-      setResponseLog('✅ Product updated: ' + `[${products[productIndex].serial}] ` + newProduct.name);
+      toast.success('Product updated: ' + `[${products[productIndex].serial}] ` + newProduct.name);
     } catch (error) {
-      setResponseLog('❌ Error updating product: ' + error.message);
+      toast.error('Error updating product: ' + error.message);
     }
 
     setSnapshotsUpdate(getRandomInt());
@@ -62,9 +59,9 @@ export default function EditProductModal({products, productIndex, setSnapshotsUp
 
         // Delete the document and fetch the items linked to that document
         docRef.delete();
-
+        toast.success(`Deleted product: ${products[productIndex].serial}`)
     } catch (error) {
-        console.log('Error deleting project' + error.message);
+        toast.error('Error deleting product' + error.message);
     }
     setSnapshotsUpdate(getRandomInt());
     setSearchQuery(searchQuery);
@@ -119,9 +116,6 @@ export default function EditProductModal({products, productIndex, setSnapshotsUp
                         <label for="location" class="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:left-0 peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">Location</label>
                     </div>
 
-                    <div className="p-2 mb-3">
-                    {responseLog}
-                    </div>
                     <button dir="ltr" type="submit" className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
                     >Update</button>
 

@@ -3,6 +3,7 @@ import Task from "./Task";
 import AddTaskModal from "./AddTaskModal";
 import { firestore } from "../../lib/firebase";
 import { shuffle } from "lodash";
+import toast from 'react-hot-toast';
 
 function Column({ colIndex, col }) {
   const colors = [
@@ -40,7 +41,7 @@ function Column({ colIndex, col }) {
         }
       });
     } catch (error) {
-      console.error('Error fetching data:', error);
+      toast.error('Error fetching data:', error);
       setTasks([]);
     }
   }

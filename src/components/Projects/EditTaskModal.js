@@ -4,6 +4,7 @@ import "react-datepicker/dist/react-datepicker.css";
 import { firestore } from "../../lib/firebase";
 import AddProductToTask from "./AddProductToTask";
 import firebase from "firebase";
+import toast from 'react-hot-toast';
 
 function EditTaskModal({colIndex, col, task, setIsEditTaskModalOpen, findTasksInColumn}) {
 
@@ -86,12 +87,12 @@ function EditTaskModal({colIndex, col, task, setIsEditTaskModalOpen, findTasksIn
 
             // Refresh the projects
             await findTasksInColumn(col);
-            setResponseLog('✅ Project Updated');
+            toast.success(`Project ${task.projectcode} Updated`);
 
             fetchProductsSnapshot();
             setIsEditTaskModalOpen(false)
         } catch (error) {
-            setResponseLog('❌ Error adding prooject: ' + error.message);
+            toast.error('Error adding prooject: ' + error.message);
         }
 
     }
@@ -117,8 +118,9 @@ function EditTaskModal({colIndex, col, task, setIsEditTaskModalOpen, findTasksIn
             await batch.commit();
             await findTasksInColumn(col);
             setIsEditTaskModalOpen(false);
+            toast.success(`Project ${task.projectcode} Deleted`);
         } catch (error) {
-            console.log('Error deleting project' + error.message);
+            toast.error('Error deleting project' + error.message);
         }
     }
 

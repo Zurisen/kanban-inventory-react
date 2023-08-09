@@ -4,6 +4,8 @@ import "react-datepicker/dist/react-datepicker.css";
 import { firestore } from "../../lib/firebase";
 import AddProductToTask from "./AddProductToTask";
 import firebase from "firebase";
+import toast from 'react-hot-toast';
+
 function AddTaskModal({colIndex, col, setIsAddTaskModalOpen, findTasksInColumn}) {
 
     /* form elements */
@@ -15,7 +17,6 @@ function AddTaskModal({colIndex, col, setIsAddTaskModalOpen, findTasksInColumn})
     //const [date, setDate] = useState(new Date());
     const [startDate, setStartDate] = useState();
     const [endDate, setEndDate] = useState();
-    const [responseLog, setResponseLog] = useState('')
 
     const [snapshot, setSnapshot] = useState();
     const [searchedProducts, setSearchedProducts] = useState([]);
@@ -45,7 +46,7 @@ function AddTaskModal({colIndex, col, setIsAddTaskModalOpen, findTasksInColumn})
             // TODO: loop over all the databases searching for it
             const existingProjectSnapshot = await projectsRef.doc(title).get();
             if (existingProjectSnapshot.exists) {
-                setResponseLog('❌ Error: Project Code is already in use.');
+                toast.error('Error: Project Code is already in use.');
                 return; // Exit the function without adding the product
             }
 
@@ -75,7 +76,7 @@ function AddTaskModal({colIndex, col, setIsAddTaskModalOpen, findTasksInColumn})
 
             // Refresh the projects
             await findTasksInColumn(col);
-            setResponseLog('✅ New project added: ' + title );
+            toast.success('New project added: ' + title );
 
             // Reset form
             setTitle('');
@@ -88,7 +89,7 @@ function AddTaskModal({colIndex, col, setIsAddTaskModalOpen, findTasksInColumn})
             fetchProductsSnapshot();
 
         } catch (error) {
-            setResponseLog('❌ Error adding prooject: ' + error.message);
+            toast.error('Error adding prooject: ' + error.message);
         }
 
     }
@@ -153,9 +154,6 @@ function AddTaskModal({colIndex, col, setIsAddTaskModalOpen, findTasksInColumn})
                             <label for="description" className="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:left-0 peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">Description</label>
                     </div>
                     <AddProductToTask col={col} searchedProducts={searchedProducts} setSearchedProducts={setSearchedProducts} snapshot={snapshot}/>
-                    <div className="p-2 mb-3">
-                    {responseLog}
-                    </div>
 
                     <button dir="ltr" type="submit" className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
                     >Create</button>
