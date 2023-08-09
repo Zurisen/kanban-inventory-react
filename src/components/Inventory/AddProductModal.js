@@ -2,9 +2,10 @@ import React from "react";
 import { useState } from "react";
 import { firestore } from '../../lib/firebase';
 import firebase from "firebase";
+import { getRandomInt } from "../../lib/utils";
 
-export default function AddProduct({filterProducts}) {
-  const [showModal, setShowModal] = React.useState(false);
+export default function AddProductModal({setSearchQuery, setSnapshotsUpdate}) {
+  const [showModal, setShowModal] = useState(false);
 
   const currentUTCDate = new Date();
   const utcTimestamp = currentUTCDate.toISOString(); // Convert to UTC string
@@ -41,7 +42,7 @@ export default function AddProduct({filterProducts}) {
         category: newProduct.category,
         location: newProduct.location,
         lastModified: firebase.firestore.Timestamp.now(), // Use Firestore timestamp
-        state: 'In Stock',
+        project: "",
       };
 
       // Set the new product data with the "serial" as the document ID
@@ -54,19 +55,20 @@ export default function AddProduct({filterProducts}) {
         category: '',
         location: '',
         lastModified: utcTimestamp,
-        state: 'In Stock',
+        project: "",
       });
 
       setResponseLog('✅ New product added: ' + `[${newProductData.serial}] ` + newProduct.name);
     } catch (error) {
       setResponseLog('❌ Error adding product: ' + error.message);
     }
-    filterProducts('');
+
+    setSnapshotsUpdate(getRandomInt());
+    setSearchQuery('');
 
   }
 
   const handleInputChange = (event) => {
-    console.log('Changing input: ', newProduct);
     const { name, value } = event.target;
     setNewProduct({
       ...newProduct,
@@ -86,7 +88,7 @@ export default function AddProduct({filterProducts}) {
                 category: '',
                 location: '',
                 lastModified: utcTimestamp,
-                state: 'In Stock',
+                project: "",
               });
               setShowModal(true);
               setResponseLog('');

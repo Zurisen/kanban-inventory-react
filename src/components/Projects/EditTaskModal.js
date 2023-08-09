@@ -89,7 +89,7 @@ function EditTaskModal({colIndex, col, task, setIsEditTaskModalOpen, findTasksIn
             setResponseLog('✅ Project Updated');
 
             fetchProductsSnapshot();
-
+            setIsEditTaskModalOpen(false)
         } catch (error) {
             setResponseLog('❌ Error adding prooject: ' + error.message);
         }
@@ -111,7 +111,7 @@ function EditTaskModal({colIndex, col, task, setIsEditTaskModalOpen, findTasksIn
             if (searchedProducts.length>0) {
                 searchedProducts.forEach((serial) => {
                     const docRef = collectionRef.doc(serial);
-                    batch.update(docRef, { state: "In Stock" , project: ""});
+                    batch.update(docRef, {project: "", lastModified: firebase.firestore.Timestamp.now()});
                 });
             }
             await batch.commit();

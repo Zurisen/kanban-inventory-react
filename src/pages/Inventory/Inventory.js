@@ -2,7 +2,7 @@ import React from 'react'
 import DefaultTable from '../../components/Inventory/DefaultTable';
 import { useState, useEffect } from 'react';
 import SearchBar from '../../components/Inventory/SearchBar';
-import AddProduct from '../../components/Inventory/AddProduct';
+import AddProductModal from '../../components/Inventory/AddProductModal';
 import { firestore } from '../../lib/firebase';
 import debounce from 'lodash.debounce';
 
@@ -12,6 +12,7 @@ export const Inventory = () => {
   const [itemsFound, setItemsFound] = useState(0);
   const [snapshotData, setSnapshotData] = useState([]);
   const [statesData, setStatesData] = useState([]);
+  const [snapshotsUpdate, setSnapshotsUpdate] = useState(0);
 
   const fetchProductsSnapshot = async () => {
     const productsRef = firestore.collection('products');
@@ -33,6 +34,7 @@ export const Inventory = () => {
   }
 
   useEffect(() => {
+    console.log("triggered");
     fetchProductsSnapshot().then((data) => {
       setSnapshotData(data);
     }).catch((error) => {
@@ -44,7 +46,7 @@ export const Inventory = () => {
     }).catch((error) => {
       console.error("Error fetching projects states:", error);
     });
-  }, []);
+  }, [snapshotsUpdate]);
   
 
   // Move the filterProducts function and useEffect to the Inventory component
@@ -94,13 +96,13 @@ export const Inventory = () => {
 
         {/* Add product Button & Search Bar */}
         <div style={{ display: 'grid', gridTemplateColumns: 'auto 1fr', gap: '8px' }}>
-          <AddProduct filterProducts={filterProducts}/>
+          <AddProductModal setSearchQuery={setSearchQuery} setSnapshotsUpdate={setSnapshotsUpdate}/>
           <SearchBar itemsFound={itemsFound} setSearchQuery={setSearchQuery}/>
         </div>
 
         {/* Products Table */}
         <div className='py-5'>
-        <DefaultTable products={products}/>
+        <DefaultTable products={products} setSearchQuery={setSearchQuery} searchQuery={searchQuery} setSnapshotsUpdate={setSnapshotsUpdate}/>
         </div>
 
       </div>
