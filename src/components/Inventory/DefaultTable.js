@@ -55,7 +55,7 @@ export default function DefaultTable({products, stateColors, searchQuery, setSea
                             <td className="px-6 py-4">
                                 {product.lastModified}
                             </td>
-                            <td className={`px-6 py-4 dark:text-${stateColors[product.state]}`}>
+                            <td className={`px-6 py-4`} style={{color:stateColors[product.state]}}> 
                                 {product.state}
                             </td>
                         </tr>

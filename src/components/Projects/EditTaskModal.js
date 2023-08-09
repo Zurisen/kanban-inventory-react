@@ -17,7 +17,6 @@ function EditTaskModal({colIndex, col, task, setIsEditTaskModalOpen, findTasksIn
     //const [date, setDate] = useState(new Date());
     const [startDate, setStartDate] = useState(task.startDate.toDate());
     const [endDate, setEndDate] = useState(task.endDate.toDate());
-    const [responseLog, setResponseLog] = useState('')
 
     const [snapshot, setSnapshot] = useState();
     const [searchedProducts, setSearchedProducts] = useState([]);
@@ -135,7 +134,7 @@ function EditTaskModal({colIndex, col, task, setIsEditTaskModalOpen, findTasksIn
                 {/*header*/}
                 <div className="flex items-start justify-between p-5 border-b border-solid border-slate-200 rounded-t">
                 <h3 className="text-2xl font-semibold">
-                    Edit Project
+                    Edit Project ({col})
                 </h3>
                 <button
                         dir="rtl"
@@ -193,9 +192,7 @@ function EditTaskModal({colIndex, col, task, setIsEditTaskModalOpen, findTasksIn
                     </div>
                     <AddProductToTask col={col} searchedProducts={searchedProducts} setSearchedProducts={setSearchedProducts} 
                         deletedProducts={deletedProducts} setDeletedProducts={setDeletedProducts} snapshot={snapshot}/>
-                    <div className="p-2 mb-3">
-                    {responseLog}
-                    </div>
+
 
                     <button dir="ltr" type="submit" className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
                     >Update</button>
