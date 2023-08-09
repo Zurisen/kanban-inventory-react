@@ -9,7 +9,14 @@ export const Projects = () => {
     const categoriesRef = firestore.collection("projectsCategories");
     categoriesRef.onSnapshot((snapshot) => {
       const data = snapshot.docs.map((doc) => doc.id);
-      setProjectsCategories(data);
+      const colors = snapshot.docs.map((doc) => doc.data().color);
+      
+      const updatedCategories = data.map((category, index) => ({
+        category: category,
+        color: colors[index]
+      }));
+  
+      setProjectsCategories(updatedCategories);
     });
   }
 
@@ -20,9 +27,9 @@ export const Projects = () => {
   return (
       <div className=" flex p-4 sm:ml-64 bg-slate-200 dark:bg-slate-900">
 
-        {projectsCategories.map((category, index) => (
+        {projectsCategories.map((project, index) => (
           <div className="p-7 py-5 bg-slate-200 dark:bg-slate-900">
-            <Column col={category} colIndex={index}/>
+            <Column col={project.category} colIndex={index} columnColor={project.color}/>
           </div>
         ))}
 

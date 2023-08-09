@@ -1,7 +1,7 @@
 import { useState } from "react";
 import EditProductModal from "./EditProductModal";
 
-export default function DefaultTable({products, searchQuery, setSearchQuery, setSnapshotsUpdate}) {
+export default function DefaultTable({products, stateColors, searchQuery, setSearchQuery, setSnapshotsUpdate}) {
     const [showEditProductModal, setShowEditProductModal] = useState(false);
     const [productIndex, setProductIndex] = useState(0);
 
@@ -55,7 +55,7 @@ export default function DefaultTable({products, searchQuery, setSearchQuery, set
                             <td className="px-6 py-4">
                                 {product.lastModified}
                             </td>
-                            <td className="px-6 py-4">
+                            <td className={`px-6 py-4 dark:text-${stateColors[product.state]}`}>
                                 {product.state}
                             </td>
                         </tr>
