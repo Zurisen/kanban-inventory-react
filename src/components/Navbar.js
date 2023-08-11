@@ -2,19 +2,7 @@ import React from 'react'
 import { useEffect } from "react";
 import { useState } from "react";
 
-export const Navbar = () => {
-    const [darkMode, setDarkMode] = useState( JSON.parse(localStorage.getItem("darkMode")) || false);
-
-    useEffect(() => {
-        localStorage.setItem("darkMode", JSON.stringify(darkMode));
-    
-        if(darkMode){
-          document.documentElement.classList.add('dark');
-        } else {
-          document.documentElement.classList.remove('dark');
-        }
-        
-      }, [darkMode]);
+export const Navbar = ({darkMode, setDarkMode}) => {
 
   return (
     <>
