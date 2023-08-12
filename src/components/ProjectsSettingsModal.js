@@ -5,7 +5,7 @@ import firebase from "firebase";
 import toast from 'react-hot-toast';
 import { ProjectType } from "./ProjectType";
 import { SketchPicker } from "react-color";
-
+import "./ColorPicker.css"
 
 export default function ProjectsSettingsModal({isProjectsSettingsVisible, setIsProjectsSettingsVisible}) {
     
@@ -38,7 +38,7 @@ export default function ProjectsSettingsModal({isProjectsSettingsVisible, setIsP
     async function handleAddProjectCategory(event)  {
         event.preventDefault();
         if (newProjectId.split(" ").join("") != "") {
-            setProjectsCategories([...projectsCategories, {category:newProjectId, color:"#DD0000"}])
+            setProjectsCategories([...projectsCategories, {category:newProjectId, color:colorPicker}])
         }
         setNewProjectId('');
     }
@@ -105,15 +105,7 @@ export default function ProjectsSettingsModal({isProjectsSettingsVisible, setIsP
 
 
     /* Color Picker Style */
-    const [showColorPicker, setShowColorPicker] = useState(false);
-    const [color, setColor] = useState("lightblue");
-    const colorPickerStyle = {
-        default: {
-            picker: {
-                position: "absolute",
-            }
-        }
-    };
+    const [colorPicker, setColorPicker] = useState("#44EE96");
 
     return (
         <>
@@ -144,17 +136,17 @@ export default function ProjectsSettingsModal({isProjectsSettingsVisible, setIsP
                             </div>
 
                                 <div className="flex">
-                                <input type="" id="" onChange={handleInputChange} value={newProjectId} class="shadow-sm bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500 dark:shadow-sm-light" placeholder="Some project type"/>
-
-                                    { showColorPicker &&  
-                                    <div className="container">
-                                        <SketchPicker 
-                                            styles={colorPickerStyle}
-                                            color={color}
-                                            onChange={(updatedColor) => setColor(updatedColor.hex)}
-                                        />
-                                    </div>
-                                    }
+                                <input type="" id="" onChange={handleInputChange} value={newProjectId} className="shadow-sm bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500 dark:shadow-sm-light" placeholder="Some project type"/>
+                                <input
+                                        type="color"
+                                        id="style1"
+                                        value={colorPicker}
+                                        onChange={(event) => {
+                                            setColorPicker(event.target.value);
+                                        }}
+                                        className="h-10 absolute right-28 mr-[-5px]"
+                                    />   
+ 
                                 <button onClick={handleAddProjectCategory} class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 mr-2 ml-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800">Add</button>
                             </div>
                         </div>
