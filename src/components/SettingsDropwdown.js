@@ -2,33 +2,20 @@ import React from 'react'
 import { firestore } from '../lib/firebase';
 import { toast } from 'react-hot-toast';
 import { useState } from 'react';
+import ProjectsSettingsModal from './ProjectsSettingsModal';
 
 export const SettingsDropdown = ({darkMode, setDarkMode}) => {
 
   const [isDropdownVisible, setIsDropdownVisible] = useState(false);
+  const [isProjectsSettingsVisible, setIsProjectsSettingsVisible] = useState(false);
 
   const toggleDropdown = () => {
       setIsDropdownVisible(prevState => !prevState);
   };
 
-  async function handleAddColumn(event)  {
-      event.preventDefault();
-      try {
-          const newcol = "New Column"
-          const projectsRef = firestore.collection('projectsCategories');
-  
-          await projectsRef.doc(newcol).set({color:""});
-  
-          // Refresh the projects
-          //await handleFindProjectCategories();
-          toast.success('New Column added: ' + newcol );
-  
-      } catch (error) {
-          toast.error('Error adding column: ' + error.message);
-      }
-  
-  }
+
   return (
+    <>
     <div style={{ position: 'relative' }}>
       <button
       onClick={toggleDropdown}
@@ -43,26 +30,27 @@ export const SettingsDropdown = ({darkMode, setDarkMode}) => {
         style={{ top: '110%', right: 0 }}
         >
             <ul  className="py-2 text-sm text-gray-700 dark:text-gray-200" aria-labelledby="dropdownMenuIconButton">
-              <li onClick={()=>{setDarkMode(!darkMode)}}>
-                <a href="#"  className=" flex px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">
-                { darkMode ? "Light Mode" : "Dark Mode"}
-                { darkMode ? (<svg aria-hidden="true" data-toggle-icon="sun" className="w-5 h-5 ml-2" fill="currentColor" viewBox="0 2 20 20" xmlns="http://www.w3.org/2000/svg"><path d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z" fillRule="evenodd" clipRule="evenodd"></path></svg>) : (<svg aria-hidden="true" data-toggle-icon="moon" className="w-4 h-4 ml-3" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"></path></svg>) }
-                </a>
+
+              <li >
+                <a onClick={()=>{setIsProjectsSettingsVisible(true)}} 
+                  style={{ cursor: 'pointer' }}
+                  className="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">Projects Settings</a>
               </li>
-              <li>
-                <a href="#"  className="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">Settings</a>
-              </li>
-              <li>
-                <a href="#"  className="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">Earnings</a>
-              </li>
+
             </ul>
             <div  className="py-2">
-              <a href="#"  className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-200 dark:hover:text-white">Separated link</a>
+              <li onClick={()=>{setDarkMode(!darkMode)}}>
+                <a href="#"  className="flex px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200">
+                { darkMode ? "Light Mode" : "Dark Mode"}
+                { darkMode ? (<svg aria-hidden="true" data-toggle-icon="sun" className="w-5 h-5 ml-2" fill="currentColor" viewBox="0 -2 20 20" xmlns="http://www.w3.org/2000/svg"><path d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z" fillRule="evenodd" clipRule="evenodd"></path></svg>) : (<svg aria-hidden="true" data-toggle-icon="moon" className="w-4 h-4 ml-3" fill="currentColor" viewBox="0 -2 20 20" xmlns="http://www.w3.org/2000/svg"><path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"></path></svg>) }
+                </a>
+              </li>
             </div>
         </div>
 }
-
 </div>
 
+{isProjectsSettingsVisible && <ProjectsSettingsModal isProjectsSettingsVisible={isProjectsSettingsVisible} setIsProjectsSettingsVisible={setIsProjectsSettingsVisible}/>}
+</>
   )
 }

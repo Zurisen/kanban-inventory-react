@@ -3,10 +3,10 @@ import { debounce } from 'lodash';
 
 export const SearchBar = ({itemsFound, setSearchQuery}) => {
 
-    const onChange = debounce((event) => {
+    const onChange = (event) => {
         const input = event.target.value;
         setSearchQuery(input);
-      }, 500);
+      };
 
     const handleKeyDown = (event) => {
         if (event.key === 'Enter') {
