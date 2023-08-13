@@ -24,3 +24,7 @@ yarn-error.log*
 data/db.json
 src/data.json
 .env
+.firebaserc
+firebase.json
+.gitignore
+.firebase/hosting.YnVpbGQ.cache
