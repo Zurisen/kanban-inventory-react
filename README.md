@@ -10,7 +10,7 @@ The application is structured in 4 main pages:
 3. Calendar (TODO:construction:): A calendar view of the projects page.
 4. Dashboard (TODO:construction:): Analytics page.
 
-## Get Started.
+## Get Started
 To get started:
 1. Clone the repo & `npm install` dependencies.
 2. Create a Firebase <a href="https://firebase.google.com/docs/firestore/quickstart">Firestore database</a>.
