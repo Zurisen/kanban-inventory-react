@@ -1,70 +1,18 @@
-# Getting Started with Create React App
+# Kanban Inventory
+This is the code repository for a minimalistic Inventory system powered by <a href="https://firebase.google.com">Firebase</a>. It is currently oriented to small companies following a B2B/B2C rental system.
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+## Structure
+The application is structured in 4 main pages:
+1. Projects: In this page you can create/delete projects and assign products to it. It is structured using a Kanban-inspired Drag & Drop component. The project types can be added/deleted from the settings menu in the Navbar.
+2. Inventory: In this page you can add/delete/query products that can then be assigned to projects. Upon creation they are set to have "In Stock" state by default. Only "In Stock" state products can be assigned to projects. 
+3. Calendar (TODO): A calendar view of the projects page.
+4. Dashboard (TODO): Analytics page.
 
-## Available Scripts
-
-In the project directory, you can run:
-
-### `npm start`
-
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
-
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
-
-### `npm test`
-
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
-
-### `npm run build`
-
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
-
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
-
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
-
-### `npm run eject`
-
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
-
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
-
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
-
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
-
-### Code Splitting
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+## Get Started.
+To get started:
+1. Clone the repo & `npm install` dependencies.
+2. Create a Firebase <a href="https://firebase.google.com/docs/firestore/quickstart">Firestore database</a>.
+3. Save the Firebase credentials in a `.env` file in the root folder of the project.
+4. Currently the app only supports email login, so create a user in Firebase-->Authentication, and give it read and write access to the previously created Firestore database.
+5. `npm start` the App.
+6. Create a few products in the Inventory page, and a Project Type in the Settings/Projects Settings.
