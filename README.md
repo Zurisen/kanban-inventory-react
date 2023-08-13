@@ -7,8 +7,8 @@ This is the code repository for a minimalistic Inventory system powered by <a hr
 The application is structured in 4 main pages:
 1. Projects: In this page you can create/delete projects and assign products to it. It is structured using a Kanban-inspired Drag & Drop component. The project types can be added/deleted from the settings menu in the Navbar.
 2. Inventory: In this page you can add/delete/query products that can then be assigned to projects. Upon creation they are set to have "In Stock" state by default. Only "In Stock" state products can be assigned to projects. 
-3. Calendar (TODO): A calendar view of the projects page.
-4. Dashboard (TODO): Analytics page.
+3. Calendar (TODO:construction:): A calendar view of the projects page.
+4. Dashboard (TODO:construction:): Analytics page.
 
 ## Get Started.
 To get started:
