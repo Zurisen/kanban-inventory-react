@@ -59,30 +59,52 @@ function EditTaskModal({colIndex, col, task, setIsEditTaskModalOpen, findTasksIn
                 endDate: endDate
             }
 
+            const newProjectHistoryData = {
+                company: company,
+                description: description,
+                location: location,
+                startDate: startDate,
+                endDate: endDate
+            }
+
+
+            // Get the historyId
+            const projectDocRef = await projectsRef.doc(title).get();
+            const projectData = projectDocRef.data();
+            const historyId = projectData.historyId;
+
+
             // Batch write the state of the products deleted from the project to the db
-            const batch = firestore.batch();
+            const deletionBatch = firestore.batch();
             const collectionRef = firestore.collection('products');
             // Loop through the searchResults and create update operations for each document
             if (deletedProducts.length>0) {
                 deletedProducts.forEach((serial) => {
                     const docRef = collectionRef.doc(serial);
-                    batch.update(docRef, {project: "", lastModified: firebase.firestore.Timestamp.now()});
+                    const docHistoryRef = collectionRef.doc(serial).collection('history').doc(historyId);
+                    deletionBatch.update(docHistoryRef, {endDate:firebase.firestore.Timestamp.now()});
+                    deletionBatch.update(docRef, {project: "", historyId:"", lastModified: firebase.firestore.Timestamp.now()});
                 });
             }
 
             // Batch write the state of the products added to the db
+            const batch = firestore.batch();
             // Loop through the searchResults and create update operations for each document
             if (searchedProducts.length>0) {
                 searchedProducts.forEach((serial) => {
                     const docRef = collectionRef.doc(serial);
-                    batch.update(docRef, {project: title, lastModified: firebase.firestore.Timestamp.now()});
+                    const docHistoryRef = collectionRef.doc(serial).collection('history').doc(historyId);
+                    batch.set(docHistoryRef, {project: title, startDate: startDate, endDate:endDate, state: col});
+                    batch.update(docRef, {project: title, historyId:historyId, lastModified: firebase.firestore.Timestamp.now()});
                 });
             }
       
             // Commit the batch write to update all product documents in a single batch operation
+            await deletionBatch.commit();
             await batch.commit();
             // Commit the new project to the projects doc db
             await projectsRef.doc(title).update(newProjectData);
+            await projectsRef.doc(title).collection('history').doc(historyId).update(newProjectHistoryData);
 
             // Refresh the projects
             await findTasksInColumn(col);
@@ -101,7 +123,9 @@ function EditTaskModal({colIndex, col, task, setIsEditTaskModalOpen, findTasksIn
         try {
             // Construct the reference to the document to delete
             const docRef = firestore.collection("projects").doc(title);
-
+            const projectDocRef = await firestore.collection("projects").doc(title).get();
+            const projectData = projectDocRef.data();
+            const historyId = projectData.historyId;
             // Delete the document and fetch the items linked to that document
             docRef.delete();
             fetchProductsSnapshot();
@@ -111,7 +135,9 @@ function EditTaskModal({colIndex, col, task, setIsEditTaskModalOpen, findTasksIn
             if (searchedProducts.length>0) {
                 searchedProducts.forEach((serial) => {
                     const docRef = collectionRef.doc(serial);
-                    batch.update(docRef, {project: "", lastModified: firebase.firestore.Timestamp.now()});
+                    const docHistoryRef = collectionRef.doc(serial).collection('history').doc(historyId);
+                    batch.update(docHistoryRef, {endDate:firebase.firestore.Timestamp.now()});
+                    batch.update(docRef, {project: "", historyId:"", lastModified: firebase.firestore.Timestamp.now()});
                 });
             }
             await batch.commit();

@@ -8,6 +8,8 @@ import toast from 'react-hot-toast';
 
 function AddTaskModal({colIndex, col, setIsAddTaskModalOpen, findTasksInColumn}) {
 
+    const { v4: uuidv4 } = require('uuid');
+
     /* form elements */
     const [title, setTitle] = useState('');
     const [company, setCompany] = useState('');
@@ -49,35 +51,51 @@ function AddTaskModal({colIndex, col, setIsAddTaskModalOpen, findTasksInColumn})
                 toast.error('Error: Project Code is already in use.');
                 return; // Exit the function without adding the product
             }
-
+    
+            const randomId = uuidv4();
             const newProjectData = {
-                projectcode: title,
                 company: company,
                 description: description,
                 location: location,
                 startDate: startDate,
                 endDate: endDate,
-                state: col
+                projectcode: title,
+                state: col,
+                historyId: randomId
             }
-
+    
             // Batch write the state of the products added to the db
             const batch = firestore.batch();
             const collectionRef = firestore.collection('products');
             // Loop through the searchResults and create update operations for each document
             searchedProducts.forEach((serial) => {
                 const docRef = collectionRef.doc(serial);
-                batch.update(docRef, {project: title, lastModified: firebase.firestore.Timestamp.now()});
+                const docHistoryRef = collectionRef.doc(serial).collection('history').doc(randomId);
+                batch.set(docHistoryRef, {project: title, startDate: startDate, endDate:endDate, state: col});
+                batch.update(docRef, {project: title, historyId:randomId, lastModified: firebase.firestore.Timestamp.now()});
             });
       
             // Commit the batch write to update all product documents in a single batch operation
             await batch.commit();
+    
             // Commit the new project to the projects doc db
             await projectsRef.doc(title).set(newProjectData);
-
+    
+            // Generate a random ID for the history document
+            const historyData = {
+                company: company,
+                description: description,
+                location: location,
+                startDate: startDate,
+                endDate: endDate,
+                state: col
+            };
+            await projectsRef.doc(title).collection('history').doc(randomId).set(historyData);
+    
             // Refresh the projects
             await findTasksInColumn(col);
             toast.success('New project added: ' + title );
-
+    
             // Reset form
             setTitle('');
             setCompany('');
@@ -87,11 +105,10 @@ function AddTaskModal({colIndex, col, setIsAddTaskModalOpen, findTasksInColumn})
             setEndDate('');
             setSearchedProducts([]);
             fetchProductsSnapshot();
-
+    
         } catch (error) {
-            toast.error('Error adding prooject: ' + error.message);
+            toast.error('Error adding project: ' + error.message);
         }
-
     }
 
     return (

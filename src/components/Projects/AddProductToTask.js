@@ -25,6 +25,7 @@ export const AddProductToTask = ({col, searchedProducts, setSearchedProducts, de
                 product.serial.toString().toLowerCase().includes(lowerCaseSearchQuery))
             );
         });
+        
         // Convert the lastModified strings to Date objects
         filteredProducts.forEach((product) => {
         product.lastModified = new Date(product.lastModified).toLocaleString(); // Convert to a string in the desired format
