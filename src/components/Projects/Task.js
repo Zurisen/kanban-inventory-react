@@ -10,7 +10,7 @@ function Task({ col, colIndex, taskIndex, task, findTasksInColumn, columnColor})
     setIsDragging(true);
     e.dataTransfer.setData(
       "text",
-      JSON.stringify({ taskIndex:taskIndex, prevColIndex: colIndex, prevCol: col, prevColprojectcode:task.projectcode })
+      JSON.stringify({company: task.company, description:task.description, startDate:task.startDate, endDate:task.endDate, projectcode:task.projectcode, location:task.location, state:col, historyId:task.historyId})
     );
   };
 

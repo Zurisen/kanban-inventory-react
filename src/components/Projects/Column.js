@@ -4,10 +4,26 @@ import AddTaskModal from "./AddTaskModal";
 import { firestore } from "../../lib/firebase";
 import { shuffle } from "lodash";
 import toast from 'react-hot-toast';
+import MoveTaskModal from "./MoveTaskModal";
 
 function Column({ colIndex, col, columnColor }) {
+  const { v4: uuidv4 } = require('uuid');
+
   const [isAddTaskModalOpen, setIsAddTaskModalOpen] = useState(false);
   const [tasks, setTasks] = useState([]);
+
+  const [isMoveTaskModalOpen, setIsMoveTaskModalOpen] = useState(false);
+  const [newMovingTaskData, setNewMovingTaskData] = useState({
+    company: '',
+    description: '',
+    location: '',
+    startDate: '',
+    endDate: '',
+    projectcode: '',
+    state: '',
+    historyId: ''
+  });
+  const [oldColMovingTask, setOldColMovingTask] = useState('');
 
 
   async function findTasksInColumn(col) {
@@ -39,18 +55,23 @@ function Column({ colIndex, col, columnColor }) {
     findTasksInColumn(col); // Fetch all products initially
   }, []);  
   
-  const handleOnDrop = async (e) => {
-    const {taskIndex, prevColIndex, prevCol, prevColprojectcode } = JSON.parse(
+  const handleOnDrop = (e) => {
+    const {company, description, startDate, endDate, projectcode, location, state, historyId} = JSON.parse(
       e.dataTransfer.getData("text")
     );
-    if (colIndex !== prevColIndex) {
-      const projectsRef = firestore.collection("projects");
-      const newProjectData = {
-          state: col
-      }
-      await projectsRef.doc(prevColprojectcode).update(newProjectData);
-      toast.success(`${prevColprojectcode} moved from "${prevCol}" to "${col}"`);
-    }
+    
+    const randomId = uuidv4();
+    setOldColMovingTask(state);
+    setNewMovingTaskData({
+      company: company,
+      description: description,
+      location: location,
+      projectcode: projectcode,
+      state: col,
+      historyId: randomId
+    })
+
+    setIsMoveTaskModalOpen(true);
   };
 
   const handleOnDragOver = (e) => {
@@ -77,6 +98,9 @@ function Column({ colIndex, col, columnColor }) {
       </p>
       {isAddTaskModalOpen && (
         <AddTaskModal colIndex={colIndex} col={col} setIsAddTaskModalOpen={setIsAddTaskModalOpen} findTasksInColumn={findTasksInColumn}/>
+      )}
+      {isMoveTaskModalOpen && (
+        <MoveTaskModal setIsMoveTaskModalOpen={setIsMoveTaskModalOpen} newMovingTaskData={newMovingTaskData} setNewMovingTaskData={setNewMovingTaskData} oldColMovingTask={oldColMovingTask} findTasksInColumn={findTasksInColumn}/>
       )}
 
       {tasks.map((task, index) => (
