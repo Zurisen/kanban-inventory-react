@@ -10,6 +10,7 @@ import { fetchProductsSnapshot } from "../../lib/utils";
 
 function MoveTaskModal({setIsMoveTaskModalOpen, newMovingTaskData, setNewMovingTaskData, oldColMovingTask, findTasksInColumn}) {
 
+    console.log(oldColMovingTask);
     const [startDate, setStartDate] = useState();
     const [endDate, setEndDate] = useState();
 
@@ -72,7 +73,7 @@ function MoveTaskModal({setIsMoveTaskModalOpen, newMovingTaskData, setNewMovingT
       
             // Commit the new project to the projects doc db
             await projectsRef.doc(newMovingTaskData.projectcode).update(newMovingTaskData);
-            await projectsRef.doc(newMovingTaskData.projectcode).collection('history').doc(historyId).set(newMovingTaskData);
+            await projectsRef.doc(newMovingTaskData.projectcode).collection('history').doc(newMovingTaskData.historyId).set(newMovingTaskData);
 
             // Commit the batch write to update all product documents in a single batch operation
             await deletionBatch.commit();
@@ -96,10 +97,10 @@ function MoveTaskModal({setIsMoveTaskModalOpen, newMovingTaskData, setNewMovingT
             )
             // Refresh the projects
             await findTasksInColumn(oldColMovingTask);
-            await findTasksInColumn(newMovingTaskData.projectcode);
+            await findTasksInColumn(newMovingTaskData.state);
 
             setIsMoveTaskModalOpen(false)
-            toast.success(`${newMovingTaskData.projectcode} moved from "${oldColMovingTask}" to "${newMovingTaskData.col}"`);
+            toast.success(`${newMovingTaskData.projectcode} moved from "${oldColMovingTask}" to "${newMovingTaskData.state}"`);
         } catch (error) {
             toast.error('Error adding prooject: ' + error.message);
         }
@@ -133,7 +134,7 @@ function MoveTaskModal({setIsMoveTaskModalOpen, newMovingTaskData, setNewMovingT
                 {/*body*/}
                 <div className="relative p-6 flex-auto text-slate-800 dark:text-gray-200">
 
-                <form onSubmit={handleMoveProjectDB}>
+                <form onSubmit={handleMoveProjectDB} autoComplete="off">
 
                     <div className="grid md:grid-cols-2 md:gap-6">
                         <div className="relative z-0 w-full mb-6 group">

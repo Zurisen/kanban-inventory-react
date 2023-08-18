@@ -131,7 +131,7 @@ function AddTaskModal({colIndex, col, setIsAddTaskModalOpen, findTasksInColumn})
                 {/*body*/}
                 <div className="relative p-6 flex-auto text-slate-800 dark:text-gray-200">
 
-                <form  onSubmit={handleInsertProjectDB}>
+                <form  onSubmit={handleInsertProjectDB} autoComplete="off">
 
                     <div className="grid md:grid-cols-2 md:gap-6">
                         <div className="relative z-0 w-full mb-6 group">
