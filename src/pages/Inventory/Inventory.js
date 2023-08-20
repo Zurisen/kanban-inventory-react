@@ -79,7 +79,7 @@ export const Inventory = () => {
 
   return (
 
-    <div className="p-4 sm:ml-64 bg-slate-200 dark:bg-slate-900">
+    <div className="p-4 sm:ml-[220px] bg-slate-200 dark:bg-slate-900">
       <div className="p-2 py-16 bg-slate-200 dark:bg-slate-900">
 
         {/* Add product Button & Search Bar */}

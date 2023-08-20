@@ -114,17 +114,8 @@ export const Calendar = () => {
 
 
   return (
-    <div className="p-4 sm:ml-60 bg-slate-200 dark:bg-slate-900 dark:text-white">
+    <div className="p-4 sm:ml-[180px] bg-slate-200 dark:bg-slate-900 dark:text-white">
       <div className="p-4 m-8 py-10 h-24 bg-slate-200 dark:bg-slate-900 dark:text-white">
-
-      <div className="inline-flex rounded-md shadow-sm mb-5" role="group">
-        <button type="button" onClick={fetchProjectHistories} className="px-4 py-2 text-sm font-medium text-gray-900 bg-transparent border border-gray-900 rounded-l-lg hover:bg-gray-900 hover:text-white focus:z-10 focus:ring-2 focus:ring-gray-500 focus:bg-gray-900 focus:text-white dark:border-white dark:text-white dark:hover:text-white dark:hover:bg-gray-700 dark:focus:bg-gray-700">
-          Projects View
-        </button>
-        <button type="button" onClick={fetchProductHistories} className="px-4 py-2 text-sm font-medium text-gray-900 bg-transparent border border-gray-900 rounded-r-md hover:bg-gray-900 hover:text-white focus:z-10 focus:ring-2 focus:ring-gray-500 focus:bg-gray-900 focus:text-white dark:border-white dark:text-white dark:hover:text-white dark:hover:bg-gray-700 dark:focus:bg-gray-700">
-          Products View
-        </button>
-      </div>
 
         <div>
           <BigCalendar
@@ -136,6 +127,17 @@ export const Calendar = () => {
             eventPropGetter={eventStyleGetter} // Apply custom event styles
           />
         </div>
+        <div className="flex justify-center mt-5">
+          <div className="inline-flex rounded-md shadow-sm" role="group">
+            <button type="button" onClick={fetchProjectHistories} className="px-4 py-2 text-sm font-medium text-gray-900 bg-transparent border border-gray-900 rounded-l-lg hover:bg-gray-900 hover:text-white focus:z-10 focus:ring-2 focus:ring-gray-500 focus:bg-gray-900 focus:text-white dark:border-white dark:text-white dark:hover:text-white dark:hover:bg-gray-700 dark:focus:bg-gray-700">
+              Projects View
+            </button>
+            <button type="button" onClick={fetchProductHistories} className="px-4 py-2 text-sm font-medium text-gray-900 bg-transparent border border-gray-900 rounded-r-md hover:bg-gray-900 hover:text-white focus:z-10 focus:ring-2 focus:ring-gray-500 focus:bg-gray-900 focus:text-white dark:border-white dark:text-white dark:hover:text-white dark:hover:bg-gray-700 dark:focus:bg-gray-700">
+              Products View
+            </button>
+          </div>
+        </div>
+
       </div>  
     </div>  
 

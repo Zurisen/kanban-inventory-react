@@ -26,7 +26,7 @@ export const Projects = () => {
   }, []);
 
   return (
-      <div className=" flex p-4 sm:ml-64 bg-slate-200 dark:bg-slate-900">
+      <div className=" flex p-4 sm:ml-[210px] bg-slate-200 dark:bg-slate-900">
 
         {projectsCategories.map((project, index) => (
           <div className="p-2 py-5 bg-slate-200 dark:bg-slate-900">

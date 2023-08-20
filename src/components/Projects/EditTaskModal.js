@@ -22,6 +22,8 @@ function EditTaskModal({colIndex, col, task, setIsEditTaskModalOpen, findTasksIn
     const [searchedProducts, setSearchedProducts] = useState([]);
     const [deletedProducts, setDeletedProducts] = useState([]);
 
+    const [showDeleteTaskConfirmationModal, setShowDeleteTaskConfirmationModal] = useState(false);
+
     // Fetch snapshot of db for quick search of items
     const fetchProductsSnapshot = async () => {
         const productsRef = firestore.collection('products');
@@ -157,8 +159,9 @@ function EditTaskModal({colIndex, col, task, setIsEditTaskModalOpen, findTasksIn
             // Construct the reference to the document to delete
             const docRef = firestore.collection("projects").doc(title);
             const projectDocRef = await firestore.collection("projects").doc(title).get();
+            const documentIdsSnapshot = await firestore.collection("projects").doc(title).collection('history').get()
+            const documentIds = documentIdsSnapshot.docs.map((doc) => doc.id);
             const projectData = projectDocRef.data();
-            const historyId = projectData.historyId;
             // Delete the document and fetch the items linked to that document
             docRef.delete();
             fetchProductsSnapshot();
@@ -168,8 +171,10 @@ function EditTaskModal({colIndex, col, task, setIsEditTaskModalOpen, findTasksIn
             if (searchedProducts.length>0) {
                 searchedProducts.forEach((serial) => {
                     const docRef = collectionRef.doc(serial);
-                    const docHistoryRef = collectionRef.doc(serial).collection('history').doc(historyId);
-                    batch.update(docHistoryRef, {endDate:firebase.firestore.Timestamp.now()});
+                    documentIds.forEach((id) => {
+                        const docHistoryRef = collectionRef.doc(serial).collection('history').doc(id);
+                        docHistoryRef.delete();
+                    })
                     batch.update(docRef, {project: "", historyId:"", lastModified: firebase.firestore.Timestamp.now()});
                 });
             }
@@ -209,11 +214,53 @@ function EditTaskModal({colIndex, col, task, setIsEditTaskModalOpen, findTasksIn
                             dir="rtl"
                             className="text-red-500 background-transparent font-bold uppercase px-2 text-sm outline-none focus:outline-none mt-2 mr-1 ease-linear transition-all duration-150  right-0"
                             type="button"
-                            onClick={handleDeleteProject}
+                            onClick={() => setShowDeleteTaskConfirmationModal(true)}
                             >
                             Delete
                     </button>  
+                    {/* Delete Confimation Modal*/} 
+                    {showDeleteTaskConfirmationModal && 
+                        <div
+                        className="justify-center items-center flex overflow-x-hidden overflow-y-auto fixed inset-0 z-50 outline-none focus:outline-none "
+                        >
+                            <div className="relative w-3/12 my-6 mx-auto max-w-5xl">
+                            {/*content*/}
+                                <div className="border rounded-lg shadow-lg relative flex flex-col w-full outline-none focus:outline-none bg-gray-50 dark:bg-gray-800 dark:text-gray-200">
+                                    <div className="p-3 text-4xl text-center">
+                                    ⚠️
+                                    </div>
+                                    <div className="flex items-start justify-between p-5 mt-[-10px] border-slate-200 rounded-t">
+                                        Are you sure you want to delete the project? This process is irreversible and will delete all history of the project.
+                                    </div>
+
+                                    <div className="flex flex-wrap justify-between">
+                                        <button
+                                            dir="ltl"
+                                            className="text-blue-500 background-transparent font-bold uppercase px-2 text-sm outline-none focus:outline-none mt-2 mb-6 w-28"
+                                            type="button"
+                                            onClick={() => setShowDeleteTaskConfirmationModal(false)}
+                                        >
+                                            Return
+                                        </button>  
+                                        <button
+                                            className="text-red-500 background-transparent font-bold uppercase px-2 text-sm outline-none focus:outline-none mt-2 mb-6 w-28"
+                                            type="button"
+                                            onClick={(event) => {
+                                                handleDeleteProject(event);
+                                                setShowDeleteTaskConfirmationModal(true);
+                                                }
+                                            }
+                                        >
+                                            Confirm
+                                        </button>  
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
                 </div>
+
+
 
 
                 </div>
