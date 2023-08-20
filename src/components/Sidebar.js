@@ -22,15 +22,15 @@ export const Sidebar = () => {
                 </a>
             </li>
             <li>
-                <a href="/Inventory" className="flex items-center p-2 text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group">
-                <i className="ml-0.5 bi bi-box2-fill text-gray-500 transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white"></i>
-                <span className="flex-1 ml-3.5 whitespace-nowrap">Inventory</span>
-                </a>
-            </li>
-            <li>
                 <a href="/Calendar" className="flex items-center p-2 text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group">
                 <i className="ml-0.5 bi bi-calendar-week-fill text-gray-500 transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white"></i>
                 <span className="flex-1 ml-3.5 whitespace-nowrap">Calendar</span>
+                </a>
+            </li>
+            <li>
+                <a href="/Inventory" className="flex items-center p-2 text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group">
+                <i className="ml-0.5 bi bi-box2-fill text-gray-500 transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white"></i>
+                <span className="flex-1 ml-3.5 whitespace-nowrap">Inventory</span>
                 </a>
             </li>
             <li>

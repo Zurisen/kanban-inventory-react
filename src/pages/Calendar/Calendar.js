@@ -70,7 +70,7 @@ export const Calendar = () => {
 
   return (
     <div className="p-4 sm:ml-60 bg-slate-200 dark:bg-slate-900 dark:text-white">
-      <div className="p-7 m-8 py-16 bg-slate-200 dark:bg-slate-900 dark:text-white">
+      <div className="p-2 m-8 py-10 bg-slate-200 dark:bg-slate-900 dark:text-white">
         <div>
           <BigCalendar
             localizer={localizer}

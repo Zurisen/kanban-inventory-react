@@ -29,7 +29,7 @@ export const Projects = () => {
       <div className=" flex p-4 sm:ml-64 bg-slate-200 dark:bg-slate-900">
 
         {projectsCategories.map((project, index) => (
-          <div className="p-7 py-5 bg-slate-200 dark:bg-slate-900">
+          <div className="p-2 py-5 bg-slate-200 dark:bg-slate-900">
             <Column col={project.category} colIndex={index} columnColor={project.color}/>
           </div>
         ))}

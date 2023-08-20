@@ -77,3 +77,52 @@
     background-color: #334155;
     border-color: #334155;
 }
+
+.rbc-time-content > * + * > * {
+    border-left: 0px;
+}
+
+.rbc-time-view {
+    display: flex;
+    flex-direction: column;
+    flex: 1 1;
+    width: 100%;
+    border: 0px;
+    min-height: 0;
+}
+
+.rbc-today {
+    background-color: #312e81;
+    opacity: 60%;
+}
+
+.rbc-time-content {
+    display: flex;
+    flex: 1 0;
+    align-items: flex-start;
+    width: 100%;
+    border-top: 0px;
+    overflow-y: auto;
+    position: relative;
+}
+.rbc-day-slot .rbc-time-slot {
+    border-top: 0px;
+}
+
+.rbc-time-header-content {
+    flex: 1 1;
+    display: flex;
+    min-width: 0;
+    flex-direction: column;
+    border-left: 0px;
+}
+
+.rbc-show-more {
+    background-color: rgba(255, 255, 255, 0);
+    z-index: 4;
+    font-weight: bold;
+    font-size: 85%;
+    height: auto;
+    line-height: normal;
+    color: #cbd5e1;
+}
