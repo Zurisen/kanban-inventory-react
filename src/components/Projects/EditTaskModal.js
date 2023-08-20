@@ -45,7 +45,7 @@ function EditTaskModal({colIndex, col, task, setIsEditTaskModalOpen, findTasksIn
     };
 
 
-    async function handleInsertProjectDB(event)  {
+    async function handleEditProject(event)  {
         event.preventDefault();
         try {
             const projectsRef = firestore.collection("projects");
@@ -118,6 +118,41 @@ function EditTaskModal({colIndex, col, task, setIsEditTaskModalOpen, findTasksIn
 
     }
 
+    async function handleFinishProject (event) {
+        event.preventDefault();
+        try {
+            // Construct the reference to the document to delete
+            const docRef = firestore.collection("projects").doc(title);
+            const projectDocRef = await firestore.collection("projects").doc(title).get();
+            const projectData = projectDocRef.data();
+            const historyId = projectData.historyId;
+            // Delete the document and fetch the items linked to that document
+            const projectsRef = firestore.collection("projects");
+
+            fetchProductsSnapshot();
+
+            const batch = firestore.batch();
+            const collectionRef = firestore.collection('products');
+            if (searchedProducts.length>0) {
+                searchedProducts.forEach((serial) => {
+                    const docRef = collectionRef.doc(serial);
+                    const docHistoryRef = collectionRef.doc(serial).collection('history').doc(historyId);
+                    batch.update(docHistoryRef, {endDate:firebase.firestore.Timestamp.now()});
+                    batch.update(docRef, {project: "", historyId:"", lastModified: firebase.firestore.Timestamp.now()});
+                });
+            }
+            await batch.commit();
+            await projectsRef.doc(title).update({state:"Finished", endDate:firebase.firestore.Timestamp.now()});
+
+            await findTasksInColumn(col);
+            setIsEditTaskModalOpen(false);
+            toast.success(`Project ${task.projectcode} Finished`);
+        } catch (error) {
+            toast.error('Error finishing project' + error.message);
+        }
+    }
+
+
     async function handleDeleteProject (event) {
         event.preventDefault();
         try {
@@ -162,22 +197,32 @@ function EditTaskModal({colIndex, col, task, setIsEditTaskModalOpen, findTasksIn
                 <h3 className="text-2xl font-semibold">
                     Edit Project ({col})
                 </h3>
-                <button
-                        dir="rtl"
-                        className="text-red-500 background-transparent font-bold uppercase px-6 py-2 text-sm outline-none focus:outline-none mr-1 mb-1 ease-linear transition-all duration-150 absolute right-0"
-                        type="button"
-                        onClick={handleDeleteProject}
-                        >
-                        Delete
-                </button>  
 
+                <div className="flex flex-wrap">
+                    <button
+                            dir="rtl"
+                            className="text-blue-500 background-transparent font-bold uppercase  px-4 text-sm outline-none focus:outline-none mt-2 mr-1 ease-linear transition-all duration-150  right-0"
+                            type="button"
+                            onClick={handleFinishProject}
+                            >
+                            Finish
+                    </button>  
+                    <button
+                            dir="rtl"
+                            className="text-red-500 background-transparent font-bold uppercase px-2 text-sm outline-none focus:outline-none mt-2 mr-1 ease-linear transition-all duration-150  right-0"
+                            type="button"
+                            onClick={handleDeleteProject}
+                            >
+                            Delete
+                    </button>  
+                </div>
 
 
                 </div>
                 {/*body*/}
                 <div className="relative p-6 flex-auto text-slate-800 dark:text-gray-200">
 
-                <form onSubmit={handleInsertProjectDB}>
+                <form onSubmit={handleEditProject}>
 
                     <div className="grid md:grid-cols-2 md:gap-6">
                         <div className="relative z-0 w-full mb-6 group">
