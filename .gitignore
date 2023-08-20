@@ -28,3 +28,5 @@ src/data.json
 firebase.json
 .gitignore
 .firebase/hosting.YnVpbGQ.cache
+.firebase/hosting.cHVibGlj.cache
+public/404.html
