@@ -5,6 +5,7 @@ import SearchBar from '../../components/Inventory/SearchBar';
 import AddProductModal from '../../components/Inventory/AddProductModal';
 import { firestore } from '../../lib/firebase';
 import debounce from 'lodash.debounce';
+import { fetchStateColors, fetchInventoryProductsSnapshot, fetchProjectsStatesSnapshot } from '../../lib/utils';
 
 export const Inventory = () => {
   const [searchQuery, setSearchQuery] = useState("");
@@ -15,38 +16,6 @@ export const Inventory = () => {
   const [stateColors, setStateColors] = useState([]);
   const [snapshotsUpdate, setSnapshotsUpdate] = useState(0);
 
-
-  const fetchStateColors = async () => {
-    const categoriesSnapshot = await firestore.collection("projectsCategories").get();
-    const categoriesData = categoriesSnapshot.docs.reduce((acc, doc) => {
-      const categoryId = doc.id;
-      const categoryData = doc.data();
-      acc[categoryId] = categoryData.color;
-      return acc;
-    }, {});
-    return categoriesData;
-  }
-
-  const fetchProductsSnapshot = async () => {
-    const productsRef = firestore.collection('products');
-    const snapshot = await productsRef.get();
-    // Extract the data from the snapshot
-    const data = snapshot.docs.map((doc) => doc.data());
-    return data;
-  }
-
-  const fetchProjectsStatesSnapshot = async () => {
-    // Fetch projects to create a dictionary of project IDs and states
-    const projectsSnapshot = await firestore.collection('projects').get();
-    const projectsData = projectsSnapshot.docs.reduce((acc, doc) => {
-      const projectId = doc.id;
-      const projectData = doc.data();
-      acc[projectId] = projectData.state;
-      return acc;
-    }, {});
-    return projectsData;
-  }
-
   useEffect(() => {
     fetchStateColors().then((data) => {
       setStateColors(data);
@@ -54,7 +23,7 @@ export const Inventory = () => {
       console.error("Error fetching colors:", error);
     });
 
-    fetchProductsSnapshot().then((data) => {
+    fetchInventoryProductsSnapshot().then((data) => {
       setSnapshotData(data);
     }).catch((error) => {
       console.error("Error fetching products:", error);
