@@ -12,7 +12,7 @@ export const Navbar = ({darkMode, setDarkMode}) => {
             <div className="flex items-center justify-between">
                 <div className="flex items-center justify-start">
 
-                    <img src="https://flowbite.com/docs/images/logo.svg" className="h-8 mr-3" alt="" />
+                    <img src="/logo.svg" className="h-8 mr-3" alt="" />
                     <span className="self-center text-xl font-semibold sm:text-2xl whitespace-nowrap dark:text-white">Kanban Inventory</span>
                 </div>
 
