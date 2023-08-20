@@ -136,13 +136,11 @@ function EditTaskModal({colIndex, col, task, setIsEditTaskModalOpen, findTasksIn
             if (searchedProducts.length>0) {
                 searchedProducts.forEach((serial) => {
                     const docRef = collectionRef.doc(serial);
-                    const docHistoryRef = collectionRef.doc(serial).collection('history').doc(historyId);
-                    batch.update(docHistoryRef, {endDate:firebase.firestore.Timestamp.now()});
                     batch.update(docRef, {project: "", historyId:"", lastModified: firebase.firestore.Timestamp.now()});
                 });
             }
             await batch.commit();
-            await projectsRef.doc(title).update({state:"Finished", endDate:firebase.firestore.Timestamp.now()});
+            await projectsRef.doc(title).update({state:"Finished"});
 
             await findTasksInColumn(col);
             setIsEditTaskModalOpen(false);
