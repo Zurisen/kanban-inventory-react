@@ -20,7 +20,6 @@ function App() {
     <div className={`app ${darkMode ? 'dark' : 'light'}`}>
       <div className="App h-screen">
         <Navbar darkMode={darkMode} setDarkMode={setDarkMode}/>
-        <Sidebar/>
         <Toaster/>
         <AllRoutes/>
       </div>

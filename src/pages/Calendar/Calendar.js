@@ -120,7 +120,7 @@ export const Calendar = () => {
 
 
   return (
-    <div className="p-4 sm:ml-[180px] bg-slate-200 dark:bg-slate-900 dark:text-white">
+    <div className="p-4 sm:ml-18 bg-slate-200 dark:bg-slate-900 dark:text-white">
       <div className="p-4 m-8 py-10 h-24 bg-slate-200 dark:bg-slate-900 dark:text-white">
 
         <div>
