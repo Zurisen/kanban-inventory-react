@@ -3,6 +3,7 @@ import { firestore } from '../lib/firebase';
 import { toast } from 'react-hot-toast';
 import { useState } from 'react';
 import ProjectsSettingsModal from './ProjectsSettingsModal';
+import SignInOut from './SignInOut';
 
 export const SettingsDropdown = ({darkMode, setDarkMode}) => {
 
@@ -29,7 +30,11 @@ export const SettingsDropdown = ({darkMode, setDarkMode}) => {
         <div className="z-10 absolute bg-white divide-y divide-gray-100 rounded-lg shadow w-44 dark:bg-gray-700 dark:divide-gray-600"
         style={{ top: '110%', right: 0 }}
         >
-            <ul  className="py-2 text-sm text-gray-700 dark:text-gray-200" aria-labelledby="dropdownMenuIconButton">
+            <ul  className="py-2 text-base text-gray-700 dark:text-gray-200" aria-labelledby="dropdownMenuIconButton">
+
+              <li >
+                <SignInOut/>
+              </li>
 
               <li >
                 <a onClick={()=>{setIsProjectsSettingsVisible(true)}} 
