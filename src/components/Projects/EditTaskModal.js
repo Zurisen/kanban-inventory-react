@@ -84,7 +84,8 @@ function EditTaskModal({colIndex, col, task, setIsEditTaskModalOpen, findTasksIn
                 deletedProducts.forEach((serial) => {
                     const docRef = collectionRef.doc(serial);
                     const docHistoryRef = collectionRef.doc(serial).collection('history').doc(historyId);
-                    deletionBatch.update(docHistoryRef, {endDate:firebase.firestore.Timestamp.now()});
+                    //deletionBatch.update(docHistoryRef, {endDate:firebase.firestore.Timestamp.now()});
+                    docHistoryRef.delete();
                     deletionBatch.update(docRef, {project: "", historyId:"", lastModified: firebase.firestore.Timestamp.now()});
                 });
             }

@@ -9,8 +9,10 @@ import './Calendar.css';
 const localizer = momentLocalizer(moment); // Use the appropriate localizer
 
 export const Calendar = () => {
-  const [events, setEvents] = useState([]);
+  const [viewState, setViewState] = useState('projects');
   const [stateColors, setStateColors] = useState([]);
+  const [productsEvents, setProductsEvents] = useState([]);
+  const [projectsEvents, setProjectsEvents] = useState([]);
 
   const fetchProjectHistories = async () => {
     try {
@@ -39,7 +41,7 @@ export const Calendar = () => {
         });
       }
   
-      setEvents(projectHistories);
+      setProjectsEvents(projectHistories);
     } catch (error) {
       console.error('Error fetching data:', error);
     }
@@ -84,7 +86,7 @@ export const Calendar = () => {
         });
       }
   
-      setEvents(productsHistories);
+      setProductsEvents(productsHistories);
     } catch (error) {
       console.error('Error fetching data:', error);
     }
@@ -98,7 +100,11 @@ export const Calendar = () => {
     });
     
     fetchProjectHistories().catch((error) => {
-      console.error("Error fetching histories:", error);
+      console.error("Error fetching project histories:", error);
+    });
+
+    fetchProductHistories().catch((error) => {
+      console.error("Error fetching product histories:", error);
     });
   }, []);
 
@@ -120,7 +126,7 @@ export const Calendar = () => {
         <div>
           <BigCalendar
             localizer={localizer}
-            events={events}
+            events={viewState === 'products' ? productsEvents : projectsEvents}
             startAccessor="start"
             endAccessor="end"
             style={{ height: 600 }} // Adjust the height as needed
@@ -129,10 +135,10 @@ export const Calendar = () => {
         </div>
         <div className="flex justify-center mt-5">
           <div className="inline-flex rounded-md shadow-sm" role="group">
-            <button type="button" onClick={fetchProjectHistories} className="px-4 py-2 text-sm font-medium text-gray-900 bg-transparent border border-gray-900 rounded-l-lg hover:bg-gray-900 hover:text-white focus:z-10 focus:ring-2 focus:ring-gray-500 focus:bg-gray-900 focus:text-white dark:border-white dark:text-white dark:hover:text-white dark:hover:bg-gray-700 dark:focus:bg-gray-700">
+            <button type="button" onClick={() => {setViewState('projects')}} className={`px-4 py-2 text-sm font-medium text-gray-900 ${viewState==='projects' ? 'bg-gray-700': 'bg-transparent'} border border-gray-900 rounded-l-md hover:bg-gray-900 hover:text-white focus:z-10 focus:bg-gray-900 focus:text-white dark:border-gray-700 dark:text-white dark:hover:text-white dark:hover:bg-gray-700 dark:focus:bg-gray-700`}>
               Projects View
             </button>
-            <button type="button" onClick={fetchProductHistories} className="px-4 py-2 text-sm font-medium text-gray-900 bg-transparent border border-gray-900 rounded-r-md hover:bg-gray-900 hover:text-white focus:z-10 focus:ring-2 focus:ring-gray-500 focus:bg-gray-900 focus:text-white dark:border-white dark:text-white dark:hover:text-white dark:hover:bg-gray-700 dark:focus:bg-gray-700">
+            <button type="button" onClick={() => {setViewState('products')}} className={`px-4 py-2 text-sm font-medium text-gray-900 ${viewState==='products' ? 'bg-gray-700': 'bg-transparent'} border border-gray-900 rounded-r-md hover:bg-gray-900 hover:text-white focus:z-10 focus:bg-gray-900 focus:text-white dark:border-gray-700 dark:text-white dark:hover:text-white dark:hover:bg-gray-700 dark:focus:bg-gray-700`}>
               Products View
             </button>
           </div>
