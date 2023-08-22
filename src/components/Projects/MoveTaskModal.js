@@ -5,7 +5,7 @@ import { firestore } from "../../lib/firebase";
 import AddProductToTask from "./AddProductToTask";
 import firebase from "firebase";
 import toast from 'react-hot-toast';
-import { fetchProductsSnapshot } from "../../lib/utils";
+import { fetchProductsSnapshot } from "../../lib/reader";
 
 
 function MoveTaskModal({setIsMoveTaskModalOpen, newMovingTaskData, setNewMovingTaskData, oldColMovingTask, findTasksInColumn}) {

@@ -1,13 +1,13 @@
 import { useState } from "react";
 import EditProductModal from "./EditProductModal";
 
-export default function DefaultTable({products, stateColors, searchQuery, setSearchQuery, setSnapshotsUpdate}) {
+export default function DefaultTable({products, stateColors, searchQuery, setSearchQuery}) {
     const [showEditProductModal, setShowEditProductModal] = useState(false);
     const [productIndex, setProductIndex] = useState(0);
 
     return (
     <div className="relative overflow-x-auto rounded-lg">
-        {showEditProductModal && <EditProductModal products={products} productIndex={productIndex} setShowEditProductModal={setShowEditProductModal} setSearchQuery={setSearchQuery} searchQuery={searchQuery} setSnapshotsUpdate={setSnapshotsUpdate}/>}
+        {showEditProductModal && <EditProductModal products={products} productIndex={productIndex} setShowEditProductModal={setShowEditProductModal} setSearchQuery={setSearchQuery} searchQuery={searchQuery}/>}
         <table className="w-full text-sm text-left text-gray-500 dark:text-gray-400">
             <thead className="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
                 <tr>

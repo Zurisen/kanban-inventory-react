@@ -2,10 +2,10 @@ import React from "react";
 import { useState } from "react";
 import { firestore } from '../../lib/firebase';
 import firebase from "firebase";
-import { getRandomInt } from "../../lib/utils";
+import { getRandomInt } from "../../lib/reader";
 import toast from 'react-hot-toast';
 
-export default function EditProductModal({products, productIndex, setSnapshotsUpdate, searchQuery, setSearchQuery, setShowEditProductModal}) {
+export default function EditProductModal({products, productIndex, searchQuery, setSearchQuery, setShowEditProductModal}) {
 
   /* Handle new product creation in DB*/
   const [newProduct, setNewProduct] = useState({
@@ -37,7 +37,6 @@ export default function EditProductModal({products, productIndex, setSnapshotsUp
       toast.error('Error updating product: ' + error.message);
     }
 
-    setSnapshotsUpdate(getRandomInt());
     setSearchQuery(searchQuery);
     setShowEditProductModal(false);
 
@@ -63,7 +62,6 @@ export default function EditProductModal({products, productIndex, setSnapshotsUp
     } catch (error) {
         toast.error('Error deleting product' + error.message);
     }
-    setSnapshotsUpdate(getRandomInt());
     setSearchQuery(searchQuery);
     setShowEditProductModal(false);
   }

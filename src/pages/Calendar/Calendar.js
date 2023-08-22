@@ -3,7 +3,7 @@ import { Calendar as BigCalendar, momentLocalizer } from 'react-big-calendar';
 import 'react-big-calendar/lib/css/react-big-calendar.css'; // Import styles
 import moment from 'moment'; // Use 'moment', 'date-fns', or 'luxon'
 import { firestore } from '../../lib/firebase';
-import { fetchStateColors } from '../../lib/utils';
+import { fetchStateColorsSnapshot } from '../../lib/reader';
 import './Calendar.css';
 
 const localizer = momentLocalizer(moment); // Use the appropriate localizer
@@ -48,15 +48,16 @@ export const Calendar = () => {
   };
 
   useEffect(() => {
-    fetchStateColors().then((data) => {
+    const unsubscribeFetchStateColorsSnapshot = fetchStateColorsSnapshot((data) => {
       setStateColors(data);
-    }).catch((error) => {
-      console.error("Error fetching colors:", error);
     });
     
     fetchProjectHistories().catch((error) => {
       console.error("Error fetching histories:", error);
     });
+    return () => {
+      unsubscribeFetchStateColorsSnapshot();
+    };
   }, []);
 
   const fetchProductHistories = async () => {
@@ -93,11 +94,6 @@ export const Calendar = () => {
   };
 
   useEffect(() => {
-    fetchStateColors().then((data) => {
-      setStateColors(data);
-    }).catch((error) => {
-      console.error("Error fetching colors:", error);
-    });
     
     fetchProjectHistories().catch((error) => {
       console.error("Error fetching project histories:", error);

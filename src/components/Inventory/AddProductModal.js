@@ -2,10 +2,10 @@ import React from "react";
 import { useState } from "react";
 import { firestore } from '../../lib/firebase';
 import firebase from "firebase";
-import { getRandomInt } from "../../lib/utils";
+import { getRandomInt } from "../../lib/reader";
 import toast from 'react-hot-toast';
 
-export default function AddProductModal({setSearchQuery, setSnapshotsUpdate}) {
+export default function AddProductModal({setSearchQuery}) {
   const [showModal, setShowModal] = useState(false);
 
   const currentUTCDate = new Date();
@@ -64,7 +64,6 @@ export default function AddProductModal({setSearchQuery, setSnapshotsUpdate}) {
       toast.error('Error adding product: ' + error.message);
     }
 
-    setSnapshotsUpdate(getRandomInt());
     setSearchQuery('');
 
   }
