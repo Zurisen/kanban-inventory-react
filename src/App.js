@@ -3,7 +3,7 @@ import {Navbar} from './components/Navbar'
 import {Sidebar} from './components/Sidebar'
 import { Toaster } from 'react-hot-toast';
 import { useState, useEffect } from 'react';
-import { fetchInventoryProductsSnapshot, fetchStateColorsSnapshot, fetchProjectsStatesSnapshot } from './lib/reader';
+import { fetchInventoryProductsSnapshot, fetchStateColorsSnapshot, fetchProjectsStatesSnapshot, fetchProjectHistoriesSnapshot, fetchProductHistoriesSnapshot} from './cloud/reader';
 
 function App() {
   const [darkMode, setDarkMode] = useState( JSON.parse(localStorage.getItem("darkMode")) || false);
@@ -26,6 +26,7 @@ function App() {
     const unsubscribeFetchProjectsStatesSnapshot = fetchProjectsStatesSnapshot((data) => {
       setStatesData(data);
     });
+
     return () => {
       unsubscribeFetchStateColorsSnapshot();
       unsubscribeFetchInventoryProductsSnapshot();
@@ -33,6 +34,7 @@ function App() {
     };
   }, []);
 
+  // theme change
   useEffect(() => {
       localStorage.setItem("darkMode", JSON.stringify(darkMode));
   
@@ -43,6 +45,7 @@ function App() {
       }
       
     }, [darkMode]);
+
   return (
     <div className={`app ${darkMode ? 'dark' : 'light'}`}>
       <div className="App h-screen">

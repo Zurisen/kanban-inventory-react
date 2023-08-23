@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import Column from '../../components/Projects/Column';
-import { firestore } from '../../lib/firebase';
+import { firestore } from '../../cloud/firebase';
 import toast from 'react-hot-toast';
 
 export const Projects = () => {

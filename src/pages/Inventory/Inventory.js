@@ -3,7 +3,7 @@ import DefaultTable from '../../components/Inventory/DefaultTable';
 import { useState, useEffect } from 'react';
 import SearchBar from '../../components/Inventory/SearchBar';
 import AddProductModal from '../../components/Inventory/AddProductModal';
-import { firestore } from '../../lib/firebase';
+import { firestore } from '../../cloud/firebase';
 import debounce from 'lodash.debounce';
 
 export const Inventory = ({snapshotData, statesData, stateColors}) => {

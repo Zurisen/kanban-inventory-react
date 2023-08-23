@@ -1,5 +1,5 @@
 import React from 'react'
-import { auth, googleAuthProvider } from '../lib/firebase'
+import { auth, googleAuthProvider } from '../cloud/firebase'
 import SignInOut from './SignInOut';
 
 export const Sidebar = () => {

@@ -1,8 +1,8 @@
 import React from "react";
 import { useState } from "react";
-import { firestore } from '../../lib/firebase';
+import { firestore } from '../../cloud/firebase';
 import firebase from "firebase";
-import { getRandomInt } from "../../lib/reader";
+import { getRandomInt } from "../../cloud/reader";
 import toast from 'react-hot-toast';
 
 export default function EditProductModal({products, productIndex, searchQuery, setSearchQuery, setShowEditProductModal}) {

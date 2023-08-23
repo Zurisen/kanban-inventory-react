@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { auth, googleAuthProvider } from '../lib/firebase';
+import { auth, googleAuthProvider } from '../cloud/firebase';
 
 export const SignInOut = () => {
   const [user, setUser] = useState(null);

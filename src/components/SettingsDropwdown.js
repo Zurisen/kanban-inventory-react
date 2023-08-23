@@ -1,5 +1,5 @@
 import React from 'react'
-import { firestore } from '../lib/firebase';
+import { firestore } from '../cloud/firebase';
 import { toast } from 'react-hot-toast';
 import { useState } from 'react';
 import ProjectsSettingsModal from './ProjectsSettingsModal';

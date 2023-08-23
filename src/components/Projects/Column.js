@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import Task from "./Task";
 import AddTaskModal from "./AddTaskModal";
-import { firestore } from "../../lib/firebase";
+import { firestore } from "../../cloud/firebase";
 import { shuffle } from "lodash";
 import toast from 'react-hot-toast';
 import MoveTaskModal from "./MoveTaskModal";

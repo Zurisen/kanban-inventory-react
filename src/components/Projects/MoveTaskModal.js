@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from "react";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
-import { firestore } from "../../lib/firebase";
+import { firestore } from "../../cloud/firebase";
 import AddProductToTask from "./AddProductToTask";
 import firebase from "firebase";
 import toast from 'react-hot-toast';
-import { fetchProductsSnapshot } from "../../lib/reader";
+import { fetchProductsSnapshot } from "../../cloud/reader";
 
 
 function MoveTaskModal({setIsMoveTaskModalOpen, newMovingTaskData, setNewMovingTaskData, oldColMovingTask, findTasksInColumn}) {

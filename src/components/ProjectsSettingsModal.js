@@ -1,6 +1,6 @@
 import React from "react";
 import { useState, useEffect } from "react";
-import { firestore } from "../lib/firebase";
+import { firestore } from "../cloud/firebase";
 import firebase from "firebase";
 import toast from 'react-hot-toast';
 import { ProjectType } from "./ProjectType";

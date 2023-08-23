@@ -2,106 +2,30 @@ import {React, useEffect, useState} from 'react';
 import { Calendar as BigCalendar, momentLocalizer } from 'react-big-calendar';
 import 'react-big-calendar/lib/css/react-big-calendar.css'; // Import styles
 import moment from 'moment'; // Use 'moment', 'date-fns', or 'luxon'
-import { firestore } from '../../lib/firebase';
-import { fetchStateColorsSnapshot } from '../../lib/reader';
+import { firestore } from '../../cloud/firebase';
+import { fetchProductHistoriesSnapshot,  fetchProjectHistoriesSnapshot} from '../../cloud/reader';
 import './Calendar.css';
 
 const localizer = momentLocalizer(moment); // Use the appropriate localizer
 
-export const Calendar = () => {
+export const Calendar = ({stateColors}) => {
   const [viewState, setViewState] = useState('projects');
-  const [stateColors, setStateColors] = useState([]);
-  const [productsEvents, setProductsEvents] = useState([]);
-  const [projectsEvents, setProjectsEvents] = useState([]);
-
-  const fetchProjectHistories = async () => {
-    try {
-      const projectHistories = [];
-      const projectsSnapshot = await firestore.collection('projects').get();
-  
-      for (const projectDoc of projectsSnapshot.docs) {
-        const projectData = projectDoc.data();
-        const projectCode = projectData.projectcode;
-  
-        // Fetch the history subcollection for each project
-        const projectHistorySnapshot = await projectDoc.ref.collection('history').get();
-  
-        projectHistorySnapshot.forEach((historyDoc) => {
-          const historyItem = historyDoc.data();
-          const { startDate, endDate } = historyItem;
-  
-          const event = {
-            title: projectCode,
-            start: new Date(startDate.seconds * 1000), // Convert Firestore timestamp to JS Date
-            end: new Date(endDate.seconds * 1000),     // Convert Firestore timestamp to JS Date
-            state: historyItem.state
-          };
-  
-          projectHistories.push(event);
-        });
-      }
-  
-      setProjectsEvents(projectHistories);
-    } catch (error) {
-      console.error('Error fetching data:', error);
-    }
-  };
+  const [projectsEvents, setProjectsEvents] = useState([]); // For the calendar
+  const [productsEvents, setProductsEvents] = useState([]); // For the calendar
 
   useEffect(() => {
-    const unsubscribeFetchStateColorsSnapshot = fetchStateColorsSnapshot((data) => {
-      setStateColors(data);
+    const unsubscribeFetchProjectHistoriesSnapshot = fetchProjectHistoriesSnapshot((data) => {
+      setProjectsEvents(data);
     });
-    
-    fetchProjectHistories().catch((error) => {
-      console.error("Error fetching histories:", error);
+
+    const unsubscribeFetchProductHistoriesSnapshot = fetchProductHistoriesSnapshot((data) => {
+      setProductsEvents(data);
     });
+
     return () => {
-      unsubscribeFetchStateColorsSnapshot();
+      unsubscribeFetchProjectHistoriesSnapshot();
+      unsubscribeFetchProductHistoriesSnapshot();
     };
-  }, []);
-
-  const fetchProductHistories = async () => {
-    try {
-      const productsHistories = [];
-      const productsSnapshot = await firestore.collection('products').get();
-  
-      for (const productsDoc of productsSnapshot.docs) {
-        const productsData = productsDoc.data();
-        const serial = productsData.serial;
-        const name = productsData.name;
-  
-        // Fetch the history subcollection for each project
-        const productsHistorySnapshot = await productsDoc.ref.collection('history').get();
-        productsHistorySnapshot.forEach((historyDoc) => {
-          const historyItem = historyDoc.data();
-          const { startDate, endDate } = historyItem;
-  
-          const event = {
-            title: `[${serial}]${name} 📂${historyItem.project}`,
-            start: new Date(startDate.seconds * 1000), // Convert Firestore timestamp to JS Date
-            end: new Date(endDate.seconds * 1000),     // Convert Firestore timestamp to JS Date
-            state: historyItem.state
-          };
-  
-          productsHistories.push(event);
-        });
-      }
-  
-      setProductsEvents(productsHistories);
-    } catch (error) {
-      console.error('Error fetching data:', error);
-    }
-  };
-
-  useEffect(() => {
-    
-    fetchProjectHistories().catch((error) => {
-      console.error("Error fetching project histories:", error);
-    });
-
-    fetchProductHistories().catch((error) => {
-      console.error("Error fetching product histories:", error);
-    });
   }, []);
 
   // Define a function to customize event styles
