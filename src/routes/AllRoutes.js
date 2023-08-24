@@ -8,8 +8,8 @@ export const AllRoutes = ({snapshotData, statesData, stateColors}) => {
   return (
     <>
     <Routes>
-        <Route path="/" element={<Projects />} />
-        <Route path="/Projects" element={<Projects />} />
+        <Route path="/" element={<Projects stateColors={stateColors} />} />
+        <Route path="/Projects" element={<Projects stateColors={stateColors}/>} />
         <Route path="/Calendar" element={<Calendar stateColors={stateColors}/>} />
         <Route path="/Inventory" element={<Inventory snapshotData={snapshotData} statesData={statesData} stateColors={stateColors}/>} />
         <Route path="/Dashboard" element={<Dashboard />} />

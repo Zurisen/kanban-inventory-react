@@ -5,6 +5,7 @@ import { firestore } from "../../cloud/firebase";
 import { shuffle } from "lodash";
 import toast from 'react-hot-toast';
 import MoveTaskModal from "./MoveTaskModal";
+import { fetchProjectsInState } from "../../cloud/reader";
 
 function Column({ colIndex, col, columnColor }) {
   const { v4: uuidv4 } = require('uuid');
@@ -23,40 +24,23 @@ function Column({ colIndex, col, columnColor }) {
     state: '',
     historyId: ''
   });
+
   const [oldColMovingTask, setOldColMovingTask] = useState('');
 
-
-  async function findTasksInColumn(col) {
-    try {
-      const colRef = firestore.collection("projects");
-  
-      // Use onSnapshot for real-time updates
-      colRef.onSnapshot((snapshot) => {
-        const data = snapshot.docs.map((doc) => doc.data());
-        const assignedProjects = data.filter((project) => {
-          return (
-            project.state.includes(col)
-          )}
-        );
-        // Check if there are no documents in the collection
-        if (assignedProjects.length === 0) {
-          setTasks([]);
-        } else {
-          setTasks(assignedProjects);
-        }
-      });
-    } catch (error) {
-      toast.error('Error fetching data:', error);
-      setTasks([]);
-    }
-  }
-
   useEffect(() => {
-    findTasksInColumn(col); // Fetch all products initially
-  }, []);  
+    const callback = (data) => {
+      setTasks(data);
+    };
+  
+    const unsubscribeFetchProjectsInState = fetchProjectsInState({ callback, col });
+  
+    return () => {
+      unsubscribeFetchProjectsInState();
+    };
+  }, [col]);
   
   const handleOnDrop = (e) => {
-    const {company, description, startDate, endDate, projectcode, location, state, historyId} = JSON.parse(
+    const {company, description, startDate, endDate, title, location, state, historyId} = JSON.parse(
       e.dataTransfer.getData("text")
     );
     
@@ -66,7 +50,7 @@ function Column({ colIndex, col, columnColor }) {
       company: company,
       description: description,
       location: location,
-      projectcode: projectcode,
+      title: title,
       state: col,
       historyId: randomId
     })
@@ -97,14 +81,14 @@ function Column({ colIndex, col, columnColor }) {
         </button>
       </p>
       {isAddTaskModalOpen && (
-        <AddTaskModal colIndex={colIndex} col={col} setIsAddTaskModalOpen={setIsAddTaskModalOpen} findTasksInColumn={findTasksInColumn}/>
+        <AddTaskModal colIndex={colIndex} col={col} setIsAddTaskModalOpen={setIsAddTaskModalOpen}/>
       )}
       {isMoveTaskModalOpen && (
-        <MoveTaskModal setIsMoveTaskModalOpen={setIsMoveTaskModalOpen} newMovingTaskData={newMovingTaskData} setNewMovingTaskData={setNewMovingTaskData} oldColMovingTask={oldColMovingTask} findTasksInColumn={findTasksInColumn}/>
+        <MoveTaskModal setIsMoveTaskModalOpen={setIsMoveTaskModalOpen} newMovingTaskData={newMovingTaskData} setNewMovingTaskData={setNewMovingTaskData} oldColMovingTask={oldColMovingTask}/>
       )}
 
       {tasks.map((task, index) => (
-        <Task key={index} taskIndex={index} task={task} colIndex={colIndex} col={col} findTasksInColumn={findTasksInColumn} columnColor={columnColor}/>
+        <Task key={index} taskIndex={index} task={task} colIndex={colIndex} col={col} columnColor={columnColor}/>
       ))}
       {
         <div>

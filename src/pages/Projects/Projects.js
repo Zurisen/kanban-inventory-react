@@ -1,39 +1,20 @@
-import React, { useState, useEffect } from 'react'
 import Column from '../../components/Projects/Column';
 import { firestore } from '../../cloud/firebase';
-import toast from 'react-hot-toast';
 
-export const Projects = () => {
-  const [projectsCategories, setProjectsCategories] = useState([]);
+export const Projects = ({stateColors}) => {
 
-  const handleFindProjectCategories = async () => {
-    const categoriesRef = firestore.collection("projectsCategories");
-    categoriesRef.onSnapshot((snapshot) => {
-      const data = snapshot.docs.map((doc) => doc.id);
-      const colors = snapshot.docs.map((doc) => doc.data().color);
-      
-      const updatedCategories = data.map((category, index) => ({
-        category: category,
-        color: colors[index]
-      }));
-  
-      setProjectsCategories(updatedCategories);
-    });
-  }
-
-  useEffect(() => {
-    handleFindProjectCategories();
-  }, []);
+  const categoryColorTuples = Object.keys(stateColors).map((category) => {
+    return [category, stateColors[category]];
+  });
 
   return (
       <div className=" flex p-4 bg-slate-200 dark:bg-slate-900">
 
-        {projectsCategories.map((project, index) => (
-          <div className="p-2 py-5 bg-slate-200 dark:bg-slate-900">
-            <Column col={project.category} colIndex={index} columnColor={project.color}/>
+        {categoryColorTuples.map(([category, color], index) => (
+          <div className="p-2 py-5 bg-slate-200 dark:bg-slate-900" key={index}>
+            <Column col={category} colIndex={index} columnColor={color} />
           </div>
         ))}
-
 
       </div> 
 )

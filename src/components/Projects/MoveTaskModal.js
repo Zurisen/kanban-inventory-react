@@ -5,26 +5,40 @@ import { firestore } from "../../cloud/firebase";
 import AddProductToTask from "./AddProductToTask";
 import firebase from "firebase";
 import toast from 'react-hot-toast';
-import { fetchProductsSnapshot } from "../../cloud/reader";
+import { fetchProductsSnapshot, fetchProductsToMoveSnapshot } from "../../cloud/reader";
+import { handleMoveProjectDB } from "../../cloud/writer";
 
 
-function MoveTaskModal({setIsMoveTaskModalOpen, newMovingTaskData, setNewMovingTaskData, oldColMovingTask, findTasksInColumn}) {
+function MoveTaskModal({setIsMoveTaskModalOpen, newMovingTaskData, setNewMovingTaskData, oldColMovingTask}) {
 
-    console.log(oldColMovingTask);
-    const [startDate, setStartDate] = useState();
-    const [endDate, setEndDate] = useState();
-
-    const [snapshot, setSnapshot] = useState();
     const [searchedProducts, setSearchedProducts] = useState([]);
     const [deletedProducts, setDeletedProducts] = useState([]);
 
 
     useEffect(() => {
-        fetchProductsSnapshot(newMovingTaskData.projectcode, setSnapshot, setSearchedProducts)
-        .catch(error => {
-          console.error('An error occurred fetching products:', error);
-        });
-    }, []);
+        const callback = (data) => {
+          setSearchedProducts(data);
+        };
+      
+        const unsubscribeFetchProductsToMoveSnapshot = fetchProductsToMoveSnapshot({newMovingTaskData, callback});
+      
+        return () => {
+            unsubscribeFetchProductsToMoveSnapshot();
+        };
+      }, []);
+
+    const handleSubmitMove = async (event) => {
+        event.preventDefault();
+
+        try{
+            await handleMoveProjectDB({newMovingTaskData, searchedProducts, deletedProducts});
+            toast.success(`Project ${newMovingTaskData.title} moved from ${oldColMovingTask} to ${newMovingTaskData.state}` );
+        } catch (error){
+            toast.error(`Error moving project ${newMovingTaskData.title}: ${error}`);
+        }
+
+        setIsMoveTaskModalOpen(false);
+    }
 
     const onChangeDate = (range) => {
         const [startDate, endDate] = range;
@@ -35,77 +49,6 @@ function MoveTaskModal({setIsMoveTaskModalOpen, newMovingTaskData, setNewMovingT
           });
     };
 
-
-    async function handleMoveProjectDB(event)  {
-        event.preventDefault();
-        try {
-            const projectsRef = firestore.collection("projects");
-
-            // Get the historyId
-            const projectDocRef = await projectsRef.doc(newMovingTaskData.projectcode).get();
-            const projectData = projectDocRef.data();
-            const historyId = projectData.historyId;
-
-            // Batch write the state of the products deleted from the project to the db
-            const deletionBatch = firestore.batch();
-            const collectionRef = firestore.collection('products');
-            // Loop through the searchResults and create update operations for each document
-            if (deletedProducts.length>0) {
-                deletedProducts.forEach((serial) => {
-                    const docRef = collectionRef.doc(serial);
-                    const docHistoryRef = collectionRef.doc(serial).collection('history').doc(historyId);
-                    deletionBatch.update(docHistoryRef, {endDate:firebase.firestore.Timestamp.now()});
-                    deletionBatch.update(docRef, {project: "", historyId:"", lastModified: firebase.firestore.Timestamp.now()});
-                });
-            }
-
-            // Batch write the state of the products added to the db
-            const batch = firestore.batch();
-            // Loop through the searchResults and create update operations for each document
-            if (searchedProducts.length>0) {
-                searchedProducts.forEach((serial) => {
-                    const docRef = collectionRef.doc(serial);
-                    const docHistoryRef = collectionRef.doc(serial).collection('history').doc(newMovingTaskData.historyId);
-                    batch.set(docHistoryRef, {project: newMovingTaskData.projectcode, startDate: newMovingTaskData.startDate, endDate:newMovingTaskData.endDate, state: newMovingTaskData.state});
-                    batch.update(docRef, {project: newMovingTaskData.projectcode, historyId:newMovingTaskData.historyId, lastModified: firebase.firestore.Timestamp.now()});
-                });
-            }
-      
-            // Commit the new project to the projects doc db
-            await projectsRef.doc(newMovingTaskData.projectcode).update(newMovingTaskData);
-            await projectsRef.doc(newMovingTaskData.projectcode).collection('history').doc(newMovingTaskData.historyId).set(newMovingTaskData);
-
-            // Commit the batch write to update all product documents in a single batch operation
-            await deletionBatch.commit();
-            await batch.commit();
-
-
-            // Refresh the projects
-            //await findTasksInColumn(newMovingTaskData);
-            //toast.success(`Project ${task.projectcode} Updated`);
-
-            //fetchProductsSnapshot();
-            setNewMovingTaskData(
-            {
-                company: '',
-                description: '',
-                location: '',
-                projectcode: '',
-                state: '',
-                historyId: ''
-                }
-            )
-            // Refresh the projects
-            await findTasksInColumn(oldColMovingTask);
-            await findTasksInColumn(newMovingTaskData.state);
-
-            setIsMoveTaskModalOpen(false)
-            toast.success(`${newMovingTaskData.projectcode} moved from "${oldColMovingTask}" to "${newMovingTaskData.state}"`);
-        } catch (error) {
-            toast.error('Error adding prooject: ' + error.message);
-        }
-
-    }
 
     const handleInputChange = (event) => {
         const { name, value } = event.target;
@@ -134,12 +77,12 @@ function MoveTaskModal({setIsMoveTaskModalOpen, newMovingTaskData, setNewMovingT
                 {/*body*/}
                 <div className="relative p-6 flex-auto text-slate-800 dark:text-gray-200">
 
-                <form onSubmit={handleMoveProjectDB} autoComplete="off">
+                <form onSubmit={handleSubmitMove} autoComplete="off">
 
                     <div className="grid md:grid-cols-2 md:gap-6">
                         <div className="relative z-0 w-full mb-6 group">
-                            <input type="projectcode" name="projectcode" id="projectcode" value={newMovingTaskData.projectcode} className="block py-2.5 px-0 w-full text-sm bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:border-gray-600 focus:outline-none focus:ring-0 peer dark:text-gray-400 text-gray-400" readOnly />
-                            <label for="projectcode" className="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:left-0  peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">Project Code</label>
+                            <input type="title" name="title" id="title" value={newMovingTaskData.title} className="block py-2.5 px-0 w-full text-sm bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:border-gray-600 focus:outline-none focus:ring-0 peer dark:text-gray-400 text-gray-400" readOnly />
+                            <label for="title" className="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:left-0  peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">Project Code</label>
                         </div>
                         <div className="relative z-10 w-full mb-6 group">
                         <DatePicker name="date" id="date"  placeholder="08/01/2023 - 08/24/2023"
@@ -175,7 +118,7 @@ function MoveTaskModal({setIsMoveTaskModalOpen, newMovingTaskData, setNewMovingT
                             <label for="description" className="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:left-0 peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">Description</label>
                     </div>
                     <AddProductToTask col={newMovingTaskData.projectcode} searchedProducts={searchedProducts} setSearchedProducts={setSearchedProducts} 
-                        deletedProducts={deletedProducts} setDeletedProducts={setDeletedProducts} snapshot={snapshot}/>
+                        deletedProducts={deletedProducts} setDeletedProducts={setDeletedProducts}/>
 
 
                     <button dir="ltr" type="submit" className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"

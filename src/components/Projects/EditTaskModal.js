@@ -5,189 +5,93 @@ import { firestore } from "../../cloud/firebase";
 import AddProductToTask from "./AddProductToTask";
 import firebase from "firebase";
 import toast from 'react-hot-toast';
+import { handleDeleteProjectDB, handleEditProjectDB, handleFinishProjectDB } from "../../cloud/writer";
+import { fetchProductsInProject } from "../../cloud/reader";
 
 function EditTaskModal({colIndex, col, task, setIsEditTaskModalOpen, findTasksInColumn}) {
 
     /* form elements */
-    const [title, setTitle] = useState(task.projectcode);
-    const [company, setCompany] = useState(task.company);
-    const [description, setDescription] = useState(task.description);
-    const [location, setLocation] = useState(task.location);
+    const [projectInfo, setProjectInfo] = useState({
+        ...task,
+        startDate:task.startDate.toDate(),
+        endDate:task.endDate.toDate()
+    });
 
-    //const [date, setDate] = useState(new Date());
-    const [startDate, setStartDate] = useState(task.startDate.toDate());
-    const [endDate, setEndDate] = useState(task.endDate.toDate());
-
-    const [snapshot, setSnapshot] = useState();
     const [searchedProducts, setSearchedProducts] = useState([]);
     const [deletedProducts, setDeletedProducts] = useState([]);
 
     const [showDeleteTaskConfirmationModal, setShowDeleteTaskConfirmationModal] = useState(false);
 
-    // Fetch snapshot of db for quick search of items
-    const fetchProductsSnapshot = async () => {
-        const productsRef = firestore.collection('products');
-        const snapshot = await productsRef.get();
-        setSnapshot(snapshot);
-        const data = snapshot.docs.map((doc) => doc.data());
-        const projectData = data.filter( (product) => {
-            return product.project.includes(title)}
-        );
-        const serials = projectData.map((product) => product.serial);
-        setSearchedProducts(serials);
-    }
     useEffect(() => {
-        fetchProductsSnapshot();
-    }, []);
+        const callback = (data) => {
+          setSearchedProducts(data);
+        };
+      
+        const unsubscribefetchProductsInProject = fetchProductsInProject({ callback, projectInfo });
+      
+        return () => {
+            unsubscribefetchProductsInProject();
+        };
+      }, []);
+
+    const handleInputChange = (event) => {
+        const { name, value } = event.target;
+        setProjectInfo({
+          ...projectInfo,
+          [name]: value,
+        });
+      };
 
     const onChangeDate = (range) => {
         const [startDate, endDate] = range;
-        setStartDate(startDate);
-        setEndDate(endDate);
+        setProjectInfo({
+            ...projectInfo,
+            startDate: startDate,
+            endDate: endDate
+        });
     };
 
-
-    async function handleEditProject(event)  {
+    const handleUpdate = async (event) => {
         event.preventDefault();
-        try {
-            const projectsRef = firestore.collection("projects");
 
-            const newProjectData = {
-                projectcode: title,
-                company: company,
-                description: description,
-                location: location,
-                startDate: startDate,
-                endDate: endDate
-            }
-
-            const newProjectHistoryData = {
-                company: company,
-                description: description,
-                location: location,
-                startDate: startDate,
-                endDate: endDate
-            }
-
-
-            // Get the historyId
-            const projectDocRef = await projectsRef.doc(title).get();
-            const projectData = projectDocRef.data();
-            const historyId = projectData.historyId;
-
-
-            // Batch write the state of the products deleted from the project to the db
-            const deletionBatch = firestore.batch();
-            const collectionRef = firestore.collection('products');
-            // Loop through the searchResults and create update operations for each document
-            if (deletedProducts.length>0) {
-                deletedProducts.forEach((serial) => {
-                    const docRef = collectionRef.doc(serial);
-                    const docHistoryRef = collectionRef.doc(serial).collection('history').doc(historyId);
-                    //deletionBatch.update(docHistoryRef, {endDate:firebase.firestore.Timestamp.now()});
-                    docHistoryRef.delete();
-                    deletionBatch.update(docRef, {project: "", historyId:"", lastModified: firebase.firestore.Timestamp.now()});
-                });
-            }
-
-            // Batch write the state of the products added to the db
-            const batch = firestore.batch();
-            // Loop through the searchResults and create update operations for each document
-            if (searchedProducts.length>0) {
-                searchedProducts.forEach((serial) => {
-                    const docRef = collectionRef.doc(serial);
-                    const docHistoryRef = collectionRef.doc(serial).collection('history').doc(historyId);
-                    batch.set(docHistoryRef, {project: title, startDate: startDate, endDate:endDate, state: col});
-                    batch.update(docRef, {project: title, historyId:historyId, lastModified: firebase.firestore.Timestamp.now()});
-                });
-            }
-      
-            // Commit the batch write to update all product documents in a single batch operation
-            await deletionBatch.commit();
-            await batch.commit();
-            // Commit the new project to the projects doc db
-            await projectsRef.doc(title).update(newProjectData);
-            await projectsRef.doc(title).collection('history').doc(historyId).update(newProjectHistoryData);
-
-            // Refresh the projects
-            await findTasksInColumn(col);
-            toast.success(`Project ${task.projectcode} Updated`);
-
-            fetchProductsSnapshot();
-            setIsEditTaskModalOpen(false)
-        } catch (error) {
-            toast.error('Error adding prooject: ' + error.message);
+        try{
+            await handleEditProjectDB({projectInfo, searchedProducts, deletedProducts});
+            toast.success(`Project ${projectInfo.title} updated!` );
+        } catch (error){
+            toast.error(`Error updating project ${projectInfo.title}: ${error}`);
         }
 
+        setIsEditTaskModalOpen(false)
+    }
+    
+    const handleFinish = async (event) => {
+        event.preventDefault();
+
+        try{
+            await handleFinishProjectDB({projectInfo, searchedProducts});
+            toast.success(`Project ${projectInfo.title} finished.`);
+        } catch (error){
+            toast.error(`Error finishing project ${projectInfo.title}: ${error}`);
+        }
+
+        setIsEditTaskModalOpen(false)
     }
 
-    async function handleFinishProject (event) {
+    const handleDelete = async (event) => {
         event.preventDefault();
-        try {
-            // Construct the reference to the document to delete
-            const docRef = firestore.collection("projects").doc(title);
-            const projectDocRef = await firestore.collection("projects").doc(title).get();
-            const projectData = projectDocRef.data();
-            const historyId = projectData.historyId;
-            // Delete the document and fetch the items linked to that document
-            const projectsRef = firestore.collection("projects");
 
-            fetchProductsSnapshot();
-
-            const batch = firestore.batch();
-            const collectionRef = firestore.collection('products');
-            if (searchedProducts.length>0) {
-                searchedProducts.forEach((serial) => {
-                    const docRef = collectionRef.doc(serial);
-                    batch.update(docRef, {project: "", historyId:"", lastModified: firebase.firestore.Timestamp.now()});
-                });
-            }
-            await batch.commit();
-            await projectsRef.doc(title).update({state:"Finished"});
-
-            await findTasksInColumn(col);
-            setIsEditTaskModalOpen(false);
-            toast.success(`Project ${task.projectcode} Finished`);
-        } catch (error) {
-            toast.error('Error finishing project' + error.message);
+        try{
+            await handleDeleteProjectDB({projectInfo, searchedProducts});
+            toast.success(`Project ${projectInfo.title} deleted.`);
+        } catch (error){
+            toast.error(`Error deleting project ${projectInfo.title}: ${error}`);
         }
+
+        setIsEditTaskModalOpen(false)
     }
 
 
-    async function handleDeleteProject (event) {
-        event.preventDefault();
-        try {
-            // Construct the reference to the document to delete
-            const docRef = firestore.collection("projects").doc(title);
-            const projectDocRef = await firestore.collection("projects").doc(title).get();
-            const documentIdsSnapshot = await firestore.collection("projects").doc(title).collection('history').get()
-            const documentIds = documentIdsSnapshot.docs.map((doc) => doc.id);
-            const projectData = projectDocRef.data();
-            // Delete the document and fetch the items linked to that document
-            docRef.delete();
-            fetchProductsSnapshot();
-
-            const batch = firestore.batch();
-            const collectionRef = firestore.collection('products');
-            if (searchedProducts.length>0) {
-                searchedProducts.forEach((serial) => {
-                    const docRef = collectionRef.doc(serial);
-                    documentIds.forEach((id) => {
-                        const docHistoryRef = collectionRef.doc(serial).collection('history').doc(id);
-                        docHistoryRef.delete();
-                    })
-                    batch.update(docRef, {project: "", historyId:"", lastModified: firebase.firestore.Timestamp.now()});
-                });
-            }
-            await batch.commit();
-            await findTasksInColumn(col);
-            setIsEditTaskModalOpen(false);
-            toast.success(`Project ${task.projectcode} Deleted`);
-        } catch (error) {
-            toast.error('Error deleting project' + error.message);
-        }
-    }
-
+    
     return (
         <>
         <div
@@ -207,7 +111,7 @@ function EditTaskModal({colIndex, col, task, setIsEditTaskModalOpen, findTasksIn
                             dir="rtl"
                             className="text-blue-500 background-transparent font-bold uppercase  px-4 text-sm outline-none focus:outline-none mt-2 mr-1 ease-linear transition-all duration-150  right-0"
                             type="button"
-                            onClick={handleFinishProject}
+                            onClick={handleFinish}
                             >
                             Finish
                     </button>  
@@ -247,7 +151,7 @@ function EditTaskModal({colIndex, col, task, setIsEditTaskModalOpen, findTasksIn
                                             className="text-red-500 background-transparent font-bold uppercase px-2 text-sm outline-none focus:outline-none mt-2 mb-6 w-28"
                                             type="button"
                                             onClick={(event) => {
-                                                handleDeleteProject(event);
+                                                handleDelete(event);
                                                 setShowDeleteTaskConfirmationModal(true);
                                                 }
                                             }
@@ -268,19 +172,19 @@ function EditTaskModal({colIndex, col, task, setIsEditTaskModalOpen, findTasksIn
                 {/*body*/}
                 <div className="relative p-6 flex-auto text-slate-800 dark:text-gray-200">
 
-                <form onSubmit={handleEditProject}>
+                <form onSubmit={handleUpdate}>
 
                     <div className="grid md:grid-cols-2 md:gap-6">
                         <div className="relative z-0 w-full mb-6 group">
-                            <input type="projectcode" name="projectcode" id="projectcode" value={title} className="block py-2.5 px-0 w-full text-sm bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:border-gray-600 focus:outline-none focus:ring-0 peer dark:text-gray-400 text-gray-400" readOnly />
-                            <label for="projectcode" className="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:left-0  peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">Project Code</label>
+                            <input type="title" name="title" id="title" value={projectInfo.title} className="block py-2.5 px-0 w-full text-sm bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:border-gray-600 focus:outline-none focus:ring-0 peer dark:text-gray-400 text-gray-400" readOnly />
+                            <label for="title" className="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:left-0  peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">Project Code</label>
                         </div>
                         <div className="relative z-10 w-full mb-6 group">
                         <DatePicker name="date" id="date"  placeholder="08/01/2023 - 08/24/2023"
-                                selected={startDate}
+                                selected={projectInfo.startDate}
                                 onChange={onChangeDate}
-                                startDate={startDate}
-                                endDate={endDate}
+                                startDate={projectInfo.startDate}
+                                endDate={projectInfo.endDate}
                                 selectsRange
                                 type="text"
                                 className="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer"
@@ -294,21 +198,21 @@ function EditTaskModal({colIndex, col, task, setIsEditTaskModalOpen, findTasksIn
 
                     <div className="grid md:grid-cols-2 md:gap-6">
                         <div className="relative z-0 w-full mb-6 group">
-                            <input onChange={(e) => setCompany(e.target.value)} type="company" name="company" id="company" value={company} className="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer" placeholder=" " required />
+                            <input onChange={handleInputChange} type="company" name="company" id="company" value={projectInfo.company} className="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer" placeholder=" " required />
                             <label for="company" className="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:left-0 peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">Company</label>
                         </div>
                         <div className="relative z-0 w-full mb-6 group">
-                            <input onChange={(e) => setLocation(e.target.value)} type="text" name="location" id="location" value={location} className="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer" placeholder=" " required />
+                            <input onChange={handleInputChange} type="text" name="location" id="location" value={projectInfo.location} className="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer" placeholder=" " required />
                             <label for="location" className="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:left-0 peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">Location</label>
                         </div>
 
                     </div>
                     <div className="relative z-0 w-full mb-6 group">
-                            <input onChange={(e) => setDescription(e.target.value)} type="text" name="description" id="description" value={description} className="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer" placeholder=" " required />
+                            <input onChange={handleInputChange} type="text" name="description" id="description" value={projectInfo.description} className="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer" placeholder=" " required />
                             <label for="description" className="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:left-0 peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">Description</label>
                     </div>
                     <AddProductToTask col={col} searchedProducts={searchedProducts} setSearchedProducts={setSearchedProducts} 
-                        deletedProducts={deletedProducts} setDeletedProducts={setDeletedProducts} snapshot={snapshot}/>
+                        deletedProducts={deletedProducts} setDeletedProducts={setDeletedProducts}/>
 
 
                     <button dir="ltr" type="submit" className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"

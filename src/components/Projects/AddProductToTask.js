@@ -1,46 +1,36 @@
 import React, { useEffect, useState } from 'react';
 import { SearchedProduct } from './SearchedProduct';
 import ShowTaskProductsDropwdown from './ShowTaskProductsDropwdown';
+import { productsRef } from '../../cloud/reader';
+import { checkSearchResultsInDB } from '../../cloud/reader';
 
-export const AddProductToTask = ({col, searchedProducts, setSearchedProducts, deletedProducts, setDeletedProducts, snapshot}) => {
+
+export const AddProductToTask = ({col, searchedProducts, setSearchedProducts, deletedProducts, setDeletedProducts}) => {
     const [searchQuery, setSearchQuery] = useState('')
     const [searchResults, setSearchResults] = useState([]);
     const [showProductsSelect, setShowProductsSelect] = useState(false);
-
-    const checkSearchResultsInDB = async (snapshot) => {
-        // Extract the data from the snapshot
-        const data = snapshot.docs.map((doc) => doc.data());
-
-        // Filter the products based on the user's search query
-        const filteredProducts = data.filter((product) => {
-            const lowerCaseSearchQuery = searchQuery.toLowerCase().trim();
-
-            // Check if the product has already been searched
-            const isAlreadySearched = searchedProducts.includes(product.serial);
-            
-            // Check if the search query matches the product name or serial and if it's not already searched
-            return (
-            (!isAlreadySearched && lowerCaseSearchQuery!=='' && product.project==="") &&
-            (product.name.toLowerCase().includes(lowerCaseSearchQuery) ||
-                product.serial.toString().toLowerCase().includes(lowerCaseSearchQuery))
-            );
-        });
-        
-        // Convert the lastModified strings to Date objects
-        filteredProducts.forEach((product) => {
-        product.lastModified = new Date(product.lastModified).toLocaleString(); // Convert to a string in the desired format
-        });
-    
-        // Sort the filtered products by lastModified in descending order
-        filteredProducts.sort((a, b) => new Date(b.lastModified) - new Date(a.lastModified));
-    
-        setSearchResults(filteredProducts);
-        setShowProductsSelect(true);
-    }
+    let unsubscribeCheckSearchResultsInDB;
 
     useEffect(() => {
-        searchQuery!== '' && checkSearchResultsInDB(snapshot);
-    }, [searchQuery]);
+        const callback = (data) => {
+          setSearchResults(data);
+          setShowProductsSelect(true);
+        };
+      
+        if (searchQuery !== '') {
+          unsubscribeCheckSearchResultsInDB = checkSearchResultsInDB({
+            callback,
+            searchedProducts,
+            searchQuery,
+          });
+        }
+      
+        return () => {
+          if (unsubscribeCheckSearchResultsInDB) {
+            unsubscribeCheckSearchResultsInDB();
+          }
+        };
+      }, [searchQuery]);
 
     const handleSearch = async (event) => {
         setSearchQuery(event.target.value);
@@ -50,7 +40,7 @@ export const AddProductToTask = ({col, searchedProducts, setSearchedProducts, de
         setSearchedProducts([...searchedProducts, serial]);
         setShowProductsSelect(false);
         setSearchQuery('');
-        setSearchResults('');
+        setSearchResults();
     };
 
     const handleDelete = (serialToDelete) => {

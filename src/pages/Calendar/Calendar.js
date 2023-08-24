@@ -2,7 +2,6 @@ import {React, useEffect, useState} from 'react';
 import { Calendar as BigCalendar, momentLocalizer } from 'react-big-calendar';
 import 'react-big-calendar/lib/css/react-big-calendar.css'; // Import styles
 import moment from 'moment'; // Use 'moment', 'date-fns', or 'luxon'
-import { firestore } from '../../cloud/firebase';
 import { fetchProductHistoriesSnapshot,  fetchProjectHistoriesSnapshot} from '../../cloud/reader';
 import './Calendar.css';
 
@@ -27,6 +26,7 @@ export const Calendar = ({stateColors}) => {
       unsubscribeFetchProductHistoriesSnapshot();
     };
   }, []);
+  console.log(projectsEvents)
 
   // Define a function to customize event styles
   const eventStyleGetter = (event, start, end, isSelected) => {

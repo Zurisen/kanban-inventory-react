@@ -5,111 +5,61 @@ import { firestore } from "../../cloud/firebase";
 import AddProductToTask from "./AddProductToTask";
 import firebase from "firebase";
 import toast from 'react-hot-toast';
+import { handleInsertProjectDB } from "../../cloud/writer";
 
-function AddTaskModal({colIndex, col, setIsAddTaskModalOpen, findTasksInColumn}) {
-
-    const { v4: uuidv4 } = require('uuid');
+function AddTaskModal({colIndex, col, setIsAddTaskModalOpen}) {
 
     /* form elements */
-    const [title, setTitle] = useState('');
-    const [company, setCompany] = useState('');
-    const [description, setDescription] = useState('');
-    const [location, setLocation] = useState('');
-
-    //const [date, setDate] = useState(new Date());
-    const [startDate, setStartDate] = useState();
-    const [endDate, setEndDate] = useState();
-
-    const [snapshot, setSnapshot] = useState();
+    const [projectInfo, setProjectInfo] = useState({
+        title: '',
+        company: '',
+        description: '',
+        location: '',
+        startDate: '',
+        endDate: '',
+        state: col
+    });
     const [searchedProducts, setSearchedProducts] = useState([]);
 
-    // Fetch snapshot of db for quick search of items
-    const fetchProductsSnapshot = async () => {
-        const productsRef = firestore.collection('products');
-        const snapshot = await productsRef.get();
-        setSnapshot(snapshot);
+    const handleSubmit = async (event) => {
+        event.preventDefault();
+
+        try{
+            await handleInsertProjectDB({projectInfo, searchedProducts});
+            toast.success('New project added: ' + projectInfo.title );
+        } catch (error){
+            toast.error(`Error adding project ${projectInfo.title}: ${error}`);
+        }
+
+        setSearchedProducts([]);
+        setProjectInfo({
+            title: '',
+            company: '',
+            description: '',
+            location: '',
+            startDate: '',
+            endDate: '',
+            state: col
+        })
     }
-    useEffect(() => {
-        fetchProductsSnapshot();
-    }, [])
+
+    const handleInputChange = (event) => {
+        const { name, value } = event.target;
+        setProjectInfo({
+          ...projectInfo,
+          [name]: value,
+        });
+      };
 
     const onChangeDate = (range) => {
         const [startDate, endDate] = range;
-        setStartDate(startDate);
-        setEndDate(endDate);
+        setProjectInfo({
+            ...projectInfo,
+            startDate: startDate,
+            endDate: endDate
+        });
     };
 
-
-    async function handleInsertProjectDB(event)  {
-        event.preventDefault();
-        try {
-            const projectsRef = firestore.collection('projects');
-            
-            // TODO: loop over all the databases searching for it
-            const existingProjectSnapshot = await projectsRef.doc(title).get();
-            if (existingProjectSnapshot.exists) {
-                toast.error('Error: Project Code is already in use.');
-                return; // Exit the function without adding the product
-            }
-    
-            const randomId = uuidv4();
-            const newProjectData = {
-                company: company,
-                description: description,
-                location: location,
-                startDate: startDate,
-                endDate: endDate,
-                projectcode: title,
-                state: col,
-                historyId: randomId
-            }
-    
-            // Batch write the state of the products added to the db
-            const batch = firestore.batch();
-            const collectionRef = firestore.collection('products');
-            // Loop through the searchResults and create update operations for each document
-            searchedProducts.forEach((serial) => {
-                const docRef = collectionRef.doc(serial);
-                const docHistoryRef = collectionRef.doc(serial).collection('history').doc(randomId);
-                batch.set(docHistoryRef, {project: title, startDate: startDate, endDate:endDate, state: col});
-                batch.update(docRef, {project: title, historyId:randomId, lastModified: firebase.firestore.Timestamp.now()});
-            });
-      
-            // Commit the batch write to update all product documents in a single batch operation
-            await batch.commit();
-    
-            // Commit the new project to the projects doc db
-            await projectsRef.doc(title).set(newProjectData);
-    
-            // Generate a random ID for the history document
-            const historyData = {
-                company: company,
-                description: description,
-                location: location,
-                startDate: startDate,
-                endDate: endDate,
-                state: col
-            };
-            await projectsRef.doc(title).collection('history').doc(randomId).set(historyData);
-    
-            // Refresh the projects
-            await findTasksInColumn(col);
-            toast.success('New project added: ' + title );
-    
-            // Reset form
-            setTitle('');
-            setCompany('');
-            setDescription('');
-            setLocation('');
-            setStartDate();
-            setEndDate('');
-            setSearchedProducts([]);
-            fetchProductsSnapshot();
-    
-        } catch (error) {
-            toast.error('Error adding project: ' + error.message);
-        }
-    }
 
     return (
         <>
@@ -131,19 +81,19 @@ function AddTaskModal({colIndex, col, setIsAddTaskModalOpen, findTasksInColumn})
                 {/*body*/}
                 <div className="relative p-6 flex-auto text-slate-800 dark:text-gray-200">
 
-                <form  onSubmit={handleInsertProjectDB} autoComplete="off">
+                <form  onSubmit={handleSubmit} autoComplete="off">
 
                     <div className="grid md:grid-cols-2 md:gap-6">
                         <div className="relative z-0 w-full mb-6 group">
-                            <input onChange={(e) => setTitle(e.target.value)} type="projectcode" name="projectcode" id="projectcode" value={title} className="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer" placeholder=" " required />
-                            <label for="projectcode" className="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:left-0 peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">Project Code</label>
+                            <input onChange={handleInputChange} type="title" name="title" id="title" value={projectInfo.title} className="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer" placeholder=" " required />
+                            <label for="title" className="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:left-0 peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">Project Code</label>
                         </div>
                         <div className="relative z-10 w-full mb-6 group">
                         <DatePicker name="date" id="date"  placeholder="08/01/2023 - 08/24/2023"
-                                selected={startDate}
+                                selected={projectInfo.startDate}
                                 onChange={onChangeDate}
-                                startDate={startDate}
-                                endDate={endDate}
+                                startDate={projectInfo.startDate}
+                                endDate={projectInfo.endDate}
                                 selectsRange
                                 type="text"
                                 required
@@ -158,20 +108,20 @@ function AddTaskModal({colIndex, col, setIsAddTaskModalOpen, findTasksInColumn})
 
                     <div className="grid md:grid-cols-2 md:gap-6">
                         <div className="relative z-0 w-full mb-6 group">
-                            <input onChange={(e) => setCompany(e.target.value)} type="company" name="company" id="company" value={company} className="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer" placeholder=" " required />
+                            <input onChange={handleInputChange} type="company" name="company" id="company" value={projectInfo.company} className="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer" placeholder=" " required />
                             <label for="company" className="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:left-0 peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">Company</label>
                         </div>
                         <div className="relative z-0 w-full mb-6 group">
-                            <input onChange={(e) => setLocation(e.target.value)} type="text" name="location" id="location" value={location} className="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer" placeholder=" " required />
+                            <input onChange={handleInputChange} type="text" name="location" id="location" value={projectInfo.location} className="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer" placeholder=" " required />
                             <label for="location" className="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:left-0 peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">Location</label>
                         </div>
 
                     </div>
                     <div className="relative z-0 w-full mb-6 group">
-                            <input onChange={(e) => setDescription(e.target.value)} type="text" name="description" id="description" value={description} className="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer" placeholder=" " required />
+                            <input onChange={handleInputChange} type="text" name="description" id="description" value={projectInfo.description} className="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer" placeholder=" " required />
                             <label for="description" className="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:left-0 peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">Description</label>
                     </div>
-                    <AddProductToTask col={col} searchedProducts={searchedProducts} setSearchedProducts={setSearchedProducts} snapshot={snapshot}/>
+                    <AddProductToTask col={col} searchedProducts={searchedProducts} setSearchedProducts={setSearchedProducts}/>
 
                     <button dir="ltr" type="submit" className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
                     >Create</button>

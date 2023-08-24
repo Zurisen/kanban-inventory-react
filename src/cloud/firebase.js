@@ -29,7 +29,11 @@ export const firestore = firebase.firestore();
 export const serverTimestamp = firebase.firestore.FieldValue.serverTimestamp;
 export const fromMillis = firebase.firestore.Timestamp.fromMillis;
 export const increment = firebase.firestore.FieldValue.increment;
+export const productsRef = firestore.collection('products');
+export const projectsRef = firestore.collection('projects');
+export const categoriesRef = firestore.collection("projectsCategories");
 
 // Storage exports
 export const storage = firebase.storage();
 export const STATE_CHANGED = firebase.storage.TaskEvent.STATE_CHANGED;
+
