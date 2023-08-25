@@ -1,5 +1,5 @@
 import { firestore } from "./firebase";
-import { productsRef, projectsRef, categoriesRef } from "./firebase";
+import { productsRef, projectsRef, categoriesRef, productsCategoriesRef } from "./firebase";
 
 export const fetchStateColorsSnapshot = (callback) => {
 
@@ -37,6 +37,13 @@ export const fetchProjectsStatesSnapshot = (callback) => {
   });
 }
 
+export const fetchOptionalProductsCategories = (callback) => {
+  // Fetch projects to create a dictionary of project IDs and states
+  return productsCategoriesRef.onSnapshot((snapshot) => {
+    const optionalProductsCategories = snapshot.docs.map((doc) => doc.id)
+    callback(optionalProductsCategories);
+  });
+}
 
 export const fetchProjectHistoriesSnapshot = (callback) => {
   const projectHistories = [];

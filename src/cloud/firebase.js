@@ -33,7 +33,7 @@ export const increment = firebase.firestore.FieldValue.increment;
 export const productsRef = firestore.collection('products');
 export const projectsRef = firestore.collection('projects');
 export const categoriesRef = firestore.collection("projectsCategories");
-
+export const productsCategoriesRef = firestore.collection('optionalProductsFields');
 // Storage exports
 export const storage = firebase.storage();
 export const STATE_CHANGED = firebase.storage.TaskEvent.STATE_CHANGED;

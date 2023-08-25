@@ -1,11 +1,15 @@
 import React from "react";
-import { useState } from "react";
-import firebase from "firebase";
+import { useState, useEffect } from "react";
 import toast from 'react-hot-toast';
-import { firestore } from "../../../cloud/firebase";
 import { handleInsertProductDB } from "../../../cloud/writer";
+import AddExtraFieldInput from "./AddExtraFieldInput";
+import { fetchOptionalProductsCategories } from "../../../cloud/reader";
+
+
 export default function AddProductModal({setSearchQuery}) {
   const [showModal, setShowModal] = useState(false);
+  const [availableCategories, setAvailableCategories] = useState([]);
+  const [addedCategories, setAddedCategories] = useState([])
 
   const currentUTCDate = new Date();
   const utcTimestamp = currentUTCDate.toISOString(); // Convert to UTC string
@@ -20,6 +24,45 @@ export default function AddProductModal({setSearchQuery}) {
     state: 'In Stock',
   });
 
+  useEffect(() => {
+    const unsubscribeFetchOptionalProductsCategories = fetchOptionalProductsCategories((data) => {
+      setAvailableCategories(data);
+    });
+
+    return () => {
+      unsubscribeFetchOptionalProductsCategories();
+    };
+  }, [showModal]);
+
+  const handleAddCategory = () => {
+    if (availableCategories.length > 0) {
+      const firstCategory = availableCategories[0];
+      setAddedCategories([...addedCategories, firstCategory]);
+      setAvailableCategories(availableCategories.slice(1));
+    }
+  };
+
+  const handleRemoveCategory = (categoryToRemove) => {
+    const updatedCategories = addedCategories.filter(
+      (category) => category !== categoryToRemove
+    );
+    setAddedCategories(updatedCategories);
+    setAvailableCategories([...availableCategories, categoryToRemove]);
+  };
+
+  const handleChangeCategory = (oldCategory, newCategory) => {
+    const updatedAvailableCategories = [
+      ...availableCategories.filter((category) => category !== newCategory),
+      oldCategory,
+    ];
+
+    setAvailableCategories(updatedAvailableCategories);
+    setAddedCategories((prevCategories) =>
+      prevCategories.map((category) =>
+        category === oldCategory ? newCategory : category
+      )
+    );
+  };
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -95,26 +138,39 @@ export default function AddProductModal({setSearchQuery}) {
                 <div className="relative p-6 flex-auto text-slate-800 dark:text-gray-200">
 
                 <form onSubmit={handleSubmit} autoComplete="off">
-                    <div class="relative z-0 w-full mb-6 group">
-                        <input name="name" id="name" value={newProduct.name} onChange={handleInputChange} class="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer" placeholder=" " required />
-                        <label for="name" class="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:left-0 peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">Product Name</label>
+                    <div className="relative z-0 w-full mb-6 group">
+                        <input name="name" id="name" value={newProduct.name} onChange={handleInputChange} className="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer" placeholder=" " required />
+                        <label for="name" className="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:left-0 peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">Product Name</label>
                     </div>
-                    <div class="grid md:grid-cols-2 md:gap-6">
-                        <div class="relative z-0 w-full mb-6 group">
-                            <input type="serial" pattern="[0-9]{12}" name="serial" id="floating_serial" value={newProduct.serial} onChange={handleInputChange} class="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer" placeholder=" " required />
-                            <label for="serial" class="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:left-0 peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">Serial Number</label>
+                    <div className="grid md:grid-cols-2 md:gap-6">
+                        <div className="relative z-0 w-full mb-6 group">
+                            <input type="serial" pattern="[0-9]{12}" name="serial" id="floating_serial" value={newProduct.serial} onChange={handleInputChange} className="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer" placeholder=" " required />
+                            <label for="serial" className="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:left-0 peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">Serial Number</label>
                         </div>
-                        <div class="relative z-0 w-full mb-6 group">
-                            <input type="text" name="category" id="category" value={newProduct.category} onChange={handleInputChange} class="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer" placeholder=" " required />
-                            <label for="category" class="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:left-0 peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">Category</label>
+                        <div className="relative z-0 w-full mb-6 group">
+                            <input type="text" name="category" id="category" value={newProduct.category} onChange={handleInputChange} className="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer" placeholder=" " required />
+                            <label for="category" className="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:left-0 peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">Category</label>
                         </div>
                     </div>
 
-                    <div class="relative z-0 w-full mb-6 group">
-                        <input type="text" name="location" id="location" value={newProduct.location} onChange={handleInputChange} class="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer" placeholder=" " required />
-                        <label for="location" class="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:left-0 peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">Location</label>
+                    <div className="relative z-0 w-full mb-6 group">
+                        <input type="text" name="location" id="location" value={newProduct.location} onChange={handleInputChange} className="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer" placeholder=" " required />
+                        <label for="location" className="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:left-0 peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">Location</label>
                     </div>
 
+                    {/* Add extra fields*/}
+
+                    { 
+                      addedCategories.map((category, index) => (<AddExtraFieldInput availableCategories={availableCategories} setAvailableCategories={setAvailableCategories} category={category} handleRemoveCategory={handleRemoveCategory} handleChangeCategory={handleChangeCategory}/>))
+                    }
+                    { availableCategories.length>0 &&
+                      <li >
+                        <a
+                          onClick={handleAddCategory}
+                          style={{ cursor: 'pointer' }}
+                          className="block text-sm py-1 mb-5 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white"> + Add extra field</a>
+                      </li>
+                    }
                     <button dir="ltr" type="submit" className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
                     >Add</button>
 
@@ -122,7 +178,11 @@ export default function AddProductModal({setSearchQuery}) {
                         dir="rtl"
                         className="text-red-500 background-transparent font-bold uppercase px-6 py-2 text-sm outline-none focus:outline-none mr-1 mb-1 ease-linear transition-all duration-150 absolute right-0"
                         type="button"
-                        onClick={() => setShowModal(false)}
+                        onClick={() => {
+                          setAvailableCategories([]);
+                          setAddedCategories([]);
+                          setShowModal(false)}
+                        }
                         >
                             Close
                     </button>                        
