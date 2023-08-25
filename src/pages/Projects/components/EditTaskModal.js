@@ -1,12 +1,10 @@
 import React, { useState, useEffect } from "react";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
-import { firestore } from "../../cloud/firebase";
 import AddProductToTask from "./AddProductToTask";
-import firebase from "firebase";
 import toast from 'react-hot-toast';
-import { handleDeleteProjectDB, handleEditProjectDB, handleFinishProjectDB } from "../../cloud/writer";
-import { fetchProductsInProject } from "../../cloud/reader";
+import { handleDeleteProjectDB, handleEditProjectDB, handleFinishProjectDB } from "../../../cloud/writer";
+import { fetchProductsInProject } from "../../../cloud/reader";
 
 function EditTaskModal({colIndex, col, task, setIsEditTaskModalOpen, findTasksInColumn}) {
 

@@ -1,62 +1,63 @@
 import React, { useState, useEffect } from "react";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
-import { firestore } from "../../cloud/firebase";
 import AddProductToTask from "./AddProductToTask";
-import firebase from "firebase";
 import toast from 'react-hot-toast';
-import { fetchProductsSnapshot, fetchProductsToMoveSnapshot } from "../../cloud/reader";
-import { handleMoveProjectDB } from "../../cloud/writer";
+import { handleInsertProjectDB } from "../../../cloud/writer";
 
+function AddTaskModal({colIndex, col, setIsAddTaskModalOpen}) {
 
-function MoveTaskModal({setIsMoveTaskModalOpen, newMovingTaskData, setNewMovingTaskData, oldColMovingTask}) {
-
+    /* form elements */
+    const [projectInfo, setProjectInfo] = useState({
+        title: '',
+        company: '',
+        description: '',
+        location: '',
+        startDate: '',
+        endDate: '',
+        state: col
+    });
     const [searchedProducts, setSearchedProducts] = useState([]);
-    const [deletedProducts, setDeletedProducts] = useState([]);
 
-
-    useEffect(() => {
-        const callback = (data) => {
-          setSearchedProducts(data);
-        };
-      
-        const unsubscribeFetchProductsToMoveSnapshot = fetchProductsToMoveSnapshot({newMovingTaskData, callback});
-      
-        return () => {
-            unsubscribeFetchProductsToMoveSnapshot();
-        };
-      }, []);
-
-    const handleSubmitMove = async (event) => {
+    const handleSubmit = async (event) => {
         event.preventDefault();
 
         try{
-            await handleMoveProjectDB({newMovingTaskData, searchedProducts, deletedProducts});
-            toast.success(`Project ${newMovingTaskData.title} moved from ${oldColMovingTask} to ${newMovingTaskData.state}` );
+            await handleInsertProjectDB({projectInfo, searchedProducts});
+            toast.success('New project added: ' + projectInfo.title );
         } catch (error){
-            toast.error(`Error moving project ${newMovingTaskData.title}: ${error}`);
+            toast.error(`Error adding project ${projectInfo.title}: ${error}`);
         }
 
-        setIsMoveTaskModalOpen(false);
+        setSearchedProducts([]);
+        setProjectInfo({
+            title: '',
+            company: '',
+            description: '',
+            location: '',
+            startDate: '',
+            endDate: '',
+            state: col
+        })
     }
-
-    const onChangeDate = (range) => {
-        const [startDate, endDate] = range;
-        setNewMovingTaskData({
-            ...newMovingTaskData,
-            startDate: startDate,
-            endDate: endDate
-          });
-    };
-
 
     const handleInputChange = (event) => {
         const { name, value } = event.target;
-        setNewMovingTaskData({
-          ...newMovingTaskData,
+        setProjectInfo({
+          ...projectInfo,
           [name]: value,
         });
       };
+
+    const onChangeDate = (range) => {
+        const [startDate, endDate] = range;
+        setProjectInfo({
+            ...projectInfo,
+            startDate: startDate,
+            endDate: endDate
+        });
+    };
+
 
     return (
         <>
@@ -69,30 +70,31 @@ function MoveTaskModal({setIsMoveTaskModalOpen, newMovingTaskData, setNewMovingT
                 {/*header*/}
                 <div className="flex items-start justify-between p-5 border-b border-solid border-slate-200 rounded-t">
                 <h3 className="text-2xl font-semibold">
-                    Move Project 
+                    Create Project ({col})
                 </h3>
+
 
 
                 </div>
                 {/*body*/}
                 <div className="relative p-6 flex-auto text-slate-800 dark:text-gray-200">
 
-                <form onSubmit={handleSubmitMove} autoComplete="off">
+                <form  onSubmit={handleSubmit} autoComplete="off">
 
                     <div className="grid md:grid-cols-2 md:gap-6">
                         <div className="relative z-0 w-full mb-6 group">
-                            <input type="title" name="title" id="title" value={newMovingTaskData.title} className="block py-2.5 px-0 w-full text-sm bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:border-gray-600 focus:outline-none focus:ring-0 peer dark:text-gray-400 text-gray-400" readOnly />
-                            <label for="title" className="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:left-0  peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">Project Code</label>
+                            <input onChange={handleInputChange} type="title" name="title" id="title" value={projectInfo.title} className="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer" placeholder=" " required />
+                            <label for="title" className="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:left-0 peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">Project Code</label>
                         </div>
                         <div className="relative z-10 w-full mb-6 group">
                         <DatePicker name="date" id="date"  placeholder="08/01/2023 - 08/24/2023"
-                                selected={newMovingTaskData.startDate}
+                                selected={projectInfo.startDate}
                                 onChange={onChangeDate}
-                                startDate={newMovingTaskData.startDate}
-                                endDate={newMovingTaskData.endDate}
+                                startDate={projectInfo.startDate}
+                                endDate={projectInfo.endDate}
                                 selectsRange
-                                required
                                 type="text"
+                                required
                                 className="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer"
                         />
                         <label for="date" className="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:left-0 peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6 left-0">Start Date - End Date</label>
@@ -104,48 +106,31 @@ function MoveTaskModal({setIsMoveTaskModalOpen, newMovingTaskData, setNewMovingT
 
                     <div className="grid md:grid-cols-2 md:gap-6">
                         <div className="relative z-0 w-full mb-6 group">
-                            <input onChange={handleInputChange} type="company" name="company" id="company" value={newMovingTaskData.company} className="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer" placeholder=" " required />
+                            <input onChange={handleInputChange} type="company" name="company" id="company" value={projectInfo.company} className="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer" placeholder=" " required />
                             <label for="company" className="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:left-0 peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">Company</label>
                         </div>
                         <div className="relative z-0 w-full mb-6 group">
-                            <input onChange={handleInputChange} type="text" name="location" id="location" value={newMovingTaskData.location} className="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer" placeholder=" " required />
+                            <input onChange={handleInputChange} type="text" name="location" id="location" value={projectInfo.location} className="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer" placeholder=" " required />
                             <label for="location" className="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:left-0 peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">Location</label>
                         </div>
 
                     </div>
                     <div className="relative z-0 w-full mb-6 group">
-                            <input onChange={handleInputChange} type="text" name="description" id="description" value={newMovingTaskData.description} className="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer" placeholder=" " required />
+                            <input onChange={handleInputChange} type="text" name="description" id="description" value={projectInfo.description} className="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer" placeholder=" " required />
                             <label for="description" className="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:left-0 peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">Description</label>
                     </div>
-                    <AddProductToTask col={newMovingTaskData.projectcode} searchedProducts={searchedProducts} setSearchedProducts={setSearchedProducts} 
-                        deletedProducts={deletedProducts} setDeletedProducts={setDeletedProducts}/>
-
+                    <AddProductToTask col={col} searchedProducts={searchedProducts} setSearchedProducts={setSearchedProducts}/>
 
                     <button dir="ltr" type="submit" className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
-                    >Update</button>
+                    >Create</button>
 
                     <button
                         dir="rtl"
                         className="text-red-500 background-transparent font-bold uppercase px-6 py-2 text-sm outline-none focus:outline-none mr-1 mb-1 ease-linear transition-all duration-150 absolute right-0"
                         type="button"
-                        onClick={() => {
-                            setNewMovingTaskData(
-                                {
-                                    company: '',
-                                    description: '',
-                                    location: '',
-                                    startDate: '',
-                                    endDate: '',
-                                    projectcode: '',
-                                    state: '',
-                                    historyId: ''
-                                    }
-                                )
-                            setIsMoveTaskModalOpen(false);
-                            toast.error('Project state update was canceled.')}
-                        }
+                        onClick={() => setIsAddTaskModalOpen(false)}
                         >
-                        Cancel
+                            Close
                     </button>                        
 
                     </form>
@@ -160,4 +145,4 @@ function MoveTaskModal({setIsMoveTaskModalOpen, newMovingTaskData, setNewMovingT
     )
 }
 
-export default MoveTaskModal;
+export default AddTaskModal;

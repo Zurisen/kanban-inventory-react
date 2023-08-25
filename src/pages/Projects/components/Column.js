@@ -1,11 +1,8 @@
 import React, { useEffect, useState } from "react";
 import Task from "./Task";
 import AddTaskModal from "./AddTaskModal";
-import { firestore } from "../../cloud/firebase";
-import { shuffle } from "lodash";
-import toast from 'react-hot-toast';
 import MoveTaskModal from "./MoveTaskModal";
-import { fetchProjectsInState } from "../../cloud/reader";
+import { fetchProjectsInState } from "../../../cloud/reader";
 
 function Column({ colIndex, col, columnColor }) {
   const { v4: uuidv4 } = require('uuid');

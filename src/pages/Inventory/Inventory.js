@@ -1,8 +1,8 @@
 import React from 'react'
-import DefaultTable from '../../components/Inventory/DefaultTable';
+import DefaultTable from './components/DefaultTable';
 import { useState, useEffect } from 'react';
-import SearchBar from '../../components/Inventory/SearchBar';
-import AddProductModal from '../../components/Inventory/AddProductModal';
+import SearchBar from './components/SearchBar';
+import AddProductModal from './components/AddProductModal';
 
 export const Inventory = ({snapshotData, statesData, stateColors}) => {
   const [searchQuery, setSearchQuery] = useState("");

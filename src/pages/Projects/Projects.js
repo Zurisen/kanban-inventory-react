@@ -1,5 +1,4 @@
-import Column from '../../components/Projects/Column';
-import { firestore } from '../../cloud/firebase';
+import Column from './components/Column';
 
 export const Projects = ({stateColors}) => {
 

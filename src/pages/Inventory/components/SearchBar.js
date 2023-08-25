@@ -1,5 +1,4 @@
 import React from 'react';
-import { debounce } from 'lodash';
 
 export const SearchBar = ({itemsFound, setSearchQuery}) => {
 

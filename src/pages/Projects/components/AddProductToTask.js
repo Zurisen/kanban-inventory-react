@@ -1,9 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { SearchedProduct } from './SearchedProduct';
 import ShowTaskProductsDropwdown from './ShowTaskProductsDropwdown';
-import { productsRef } from '../../cloud/reader';
-import { checkSearchResultsInDB } from '../../cloud/reader';
-
+import { productsRef } from '../../../cloud/reader';
+import { checkSearchResultsInDB } from '../../../cloud/reader';
 
 export const AddProductToTask = ({col, searchedProducts, setSearchedProducts, deletedProducts, setDeletedProducts}) => {
     const [searchQuery, setSearchQuery] = useState('')

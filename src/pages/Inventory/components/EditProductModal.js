@@ -1,24 +1,17 @@
 import React from "react";
 import { useState } from "react";
-import { firestore } from '../../cloud/firebase';
 import firebase from "firebase";
-import { getRandomInt } from "../../cloud/reader";
 import toast from 'react-hot-toast';
+import { firestore } from "../../../cloud/firebase";
 
-export default function AddProductModal({setSearchQuery}) {
-  const [showModal, setShowModal] = useState(false);
-
-  const currentUTCDate = new Date();
-  const utcTimestamp = currentUTCDate.toISOString(); // Convert to UTC string
+export default function EditProductModal({products, productIndex, searchQuery, setSearchQuery, setShowEditProductModal}) {
 
   /* Handle new product creation in DB*/
   const [newProduct, setNewProduct] = useState({
-    name: '',
-    serial: '',
-    category: '',
-    location: '',
-    lastModified: utcTimestamp,
-    state: 'In Stock',
+    name: products[productIndex].name,
+    serial: products[productIndex].serial,
+    category: products[productIndex].category,
+    location: products[productIndex].location,
   });
 
   async function handleInsertProductDB(event) {
@@ -27,44 +20,24 @@ export default function AddProductModal({setSearchQuery}) {
       // Create a reference to the "products" collection
       const productsRef = firestore.collection('products');
 
-      // Check if a document with the same serial already exists
-      const existingProductSnapshot = await productsRef.doc(newProduct.serial).get();
-
-      if (existingProductSnapshot.exists) {
-        toast.error('Error: Serial number is already in use.');
-        console.log('damn');
-        return; // Exit the function without adding the product
-      }
-
       // Prepare the new product data to be added to Firestore
       const newProductData = {
         name: newProduct.name,
-        serial: newProduct.serial,
         category: newProduct.category,
         location: newProduct.location,
         lastModified: firebase.firestore.Timestamp.now(), // Use Firestore timestamp
-        project: "",
       };
 
       // Set the new product data with the "serial" as the document ID
-      await productsRef.doc(newProduct.serial).set(newProductData);
+      await productsRef.doc(products[productIndex].serial).update(newProductData);
 
-      // Clear the form fields and reset the newProduct state
-      setNewProduct({
-        name: '',
-        serial: '',
-        category: '',
-        location: '',
-        lastModified: utcTimestamp,
-        project: "",
-      });
-
-      toast.success('New product added: ' + `[${newProductData.serial}] ` + newProduct.name);
+      toast.success('Product updated: ' + `[${products[productIndex].serial}] ` + newProduct.name);
     } catch (error) {
-      toast.error('Error adding product: ' + error.message);
+      toast.error('Error updating product: ' + error.message);
     }
 
-    setSearchQuery('');
+    setSearchQuery(searchQuery);
+    setShowEditProductModal(false);
 
   }
 
@@ -75,28 +48,26 @@ export default function AddProductModal({setSearchQuery}) {
       [name]: value,
     });
   };
+
+  const handleDeleteProduct = (event) => {
+    event.preventDefault();
+    try {
+        // Construct the reference to the document to delete
+        const docRef = firestore.collection("products").doc(products[productIndex].serial);
+
+        // Delete the document and fetch the items linked to that document
+        docRef.delete();
+        toast.success(`Deleted product: ${products[productIndex].serial}`)
+    } catch (error) {
+        toast.error('Error deleting product' + error.message);
+    }
+    setSearchQuery(searchQuery);
+    setShowEditProductModal(false);
+  }
   
   return (
     <>
-      <button
-        className="text-gray-900 bg-white border border-gray-300 focus:outline-none hover:bg-gray-100 focus:ring-4 focus:ring-gray-200 font-medium rounded-lg text-sm px-5 py-4 mb-2 mr-3 dark:bg-gray-800 dark:text-white dark:border-gray-600 dark:hover:bg-gray-700 dark:hover:border-gray-600 dark:focus:ring-gray-700"
-        type="button"
-        onClick={() => {
-            setNewProduct({
-                name: '',
-                serial: '',
-                category: '',
-                location: '',
-                lastModified: utcTimestamp,
-                project: "",
-              });
-              setShowModal(true);
-        }}
-      >
-        Add Product
-      </button>
-      {showModal ? (
-        <>
+
           <div
             className="justify-center items-center flex overflow-x-hidden overflow-y-auto fixed inset-0 z-50 outline-none focus:outline-none "
           >
@@ -106,30 +77,30 @@ export default function AddProductModal({setSearchQuery}) {
                 {/*header*/}
                 <div className="flex items-start justify-between p-5 border-b border-solid border-slate-200 rounded-t">
                   <h3 className="text-2xl font-semibold">
-                    Create Product
+                    Edit Product
                   </h3>
-
                   <button
-                    className="p-1 ml-auto bg-transparent border-0 text-black opacity-5 float-right text-3xl leading-none font-semibold outline-none focus:outline-none"
-                    onClick={() => setShowModal(false)}
-                  >
-                    <span className="bg-transparent text-black opacity-5 h-6 w-6 text-2xl block outline-none focus:outline-none">
-                      ×
-                    </span>
-                  </button>
+                        dir="rtl"
+                        className="text-red-500 background-transparent font-bold uppercase px-6 py-2 text-sm outline-none focus:outline-none mr-1 mb-1 ease-linear transition-all duration-150 absolute right-0"
+                        type="button"
+                        onClick={handleDeleteProduct}
+                        >
+                        Delete
+                </button> 
+
                 </div>
                 {/*body*/}
                 <div className="relative p-6 flex-auto text-slate-800 dark:text-gray-200">
 
-                <form onSubmit={handleInsertProductDB} autoComplete="off">
+                <form onSubmit={handleInsertProductDB}>
                     <div class="relative z-0 w-full mb-6 group">
                         <input name="name" id="name" value={newProduct.name} onChange={handleInputChange} class="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer" placeholder=" " required />
                         <label for="name" class="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:left-0 peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">Product Name</label>
                     </div>
                     <div class="grid md:grid-cols-2 md:gap-6">
                         <div class="relative z-0 w-full mb-6 group">
-                            <input type="serial" pattern="[0-9]{12}" name="serial" id="floating_serial" value={newProduct.serial} onChange={handleInputChange} class="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer" placeholder=" " required />
-                            <label for="serial" class="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:left-0 peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">Serial Number</label>
+                            <input type="serial" pattern="[0-9]{12}" name="serial" id="floating_serial" value={newProduct.serial} onChange={handleInputChange} class="block py-2.5 px-0 w-full text-sm text-gray-600 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-gray-300 dark:border-gray-600 focus:outline-none peer" readOnly/>
+                            <label for="serial" class="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:left-0  peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">Serial Number</label>
                         </div>
                         <div class="relative z-0 w-full mb-6 group">
                             <input type="text" name="category" id="category" value={newProduct.category} onChange={handleInputChange} class="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer" placeholder=" " required />
@@ -143,13 +114,13 @@ export default function AddProductModal({setSearchQuery}) {
                     </div>
 
                     <button dir="ltr" type="submit" className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
-                    >Add</button>
+                    >Update</button>
 
                     <button
                         dir="rtl"
                         className="text-red-500 background-transparent font-bold uppercase px-6 py-2 text-sm outline-none focus:outline-none mr-1 mb-1 ease-linear transition-all duration-150 absolute right-0"
                         type="button"
-                        onClick={() => setShowModal(false)}
+                        onClick={() => setShowEditProductModal(false)}
                         >
                             Close
                     </button>                        
@@ -163,7 +134,5 @@ export default function AddProductModal({setSearchQuery}) {
           </div>
           <div className="opacity-25 fixed inset-0 z-40 bg-black"></div>
         </>
-      ) : null}
-    </>
   );
 }
