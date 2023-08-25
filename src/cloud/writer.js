@@ -124,7 +124,7 @@ export const handleDeleteProjectDB = async ({projectInfo, searchedProducts}) => 
 }
 
 
-export const handleMoveProjectDB = async({newMovingTaskData, deletedProducts, searchedProducts}) => {
+export const handleMoveProjectDB = async ({newMovingTaskData, deletedProducts, searchedProducts}) => {
 
         // Get the historyId
         const projectDocRef = await projectsRef.doc(newMovingTaskData.title).get();
@@ -163,6 +163,44 @@ export const handleMoveProjectDB = async({newMovingTaskData, deletedProducts, se
         // Commit the batch write to update all product documents in a single batch operation
         await deletionBatch.commit();
         await batch.commit();
-
-
 }
+
+export const handleInsertProductDB = async ({newProduct}) => {
+      // Check if a document with the same serial already exists
+      const existingProductSnapshot = await productsRef.doc(newProduct.serial).get();
+
+      if (existingProductSnapshot.exists) {
+        throw new Error('Error: Serial number is already in use.');
+      }
+
+      // Prepare the new product data to be added to Firestore
+      const newProductData = {
+        ...newProduct,
+        lastModified: firebase.firestore.Timestamp.now(), // Use Firestore timestamp
+        project: "",
+      };
+
+      // Set the new product data with the "serial" as the document ID
+      await productsRef.doc(newProduct.serial).set(newProductData);
+  }
+
+
+export const handleEditProductDB = async ({newProduct}) => {
+
+      // Prepare the new product data to be added to Firestore
+      const newProductData = {
+        ...newProduct,
+        lastModified: firebase.firestore.Timestamp.now(), // Use Firestore timestamp
+      };
+
+      // Set the new product data with the "serial" as the document ID
+      await productsRef.doc(newProduct.serial).update(newProductData);
+}
+
+export const handleDeleteProductDB = async ({newProduct}) => {
+        // Construct the reference to the document to delete
+        const docRef = firestore.collection("products").doc(newProduct.serial);
+
+        // Delete the document and fetch the items linked to that document
+        docRef.delete();
+  }

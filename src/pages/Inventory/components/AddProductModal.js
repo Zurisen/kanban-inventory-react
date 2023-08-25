@@ -3,6 +3,7 @@ import { useState } from "react";
 import firebase from "firebase";
 import toast from 'react-hot-toast';
 import { firestore } from "../../../cloud/firebase";
+import { handleInsertProductDB } from "../../../cloud/writer";
 export default function AddProductModal({setSearchQuery}) {
   const [showModal, setShowModal] = useState(false);
 
@@ -19,52 +20,26 @@ export default function AddProductModal({setSearchQuery}) {
     state: 'In Stock',
   });
 
-  async function handleInsertProductDB(event) {
+
+  const handleSubmit = async (event) => {
     event.preventDefault();
-    try {
-      // Create a reference to the "products" collection
-      const productsRef = firestore.collection('products');
 
-      // Check if a document with the same serial already exists
-      const existingProductSnapshot = await productsRef.doc(newProduct.serial).get();
-
-      if (existingProductSnapshot.exists) {
-        toast.error('Error: Serial number is already in use.');
-        console.log('damn');
-        return; // Exit the function without adding the product
-      }
-
-      // Prepare the new product data to be added to Firestore
-      const newProductData = {
-        name: newProduct.name,
-        serial: newProduct.serial,
-        category: newProduct.category,
-        location: newProduct.location,
-        lastModified: firebase.firestore.Timestamp.now(), // Use Firestore timestamp
-        project: "",
-      };
-
-      // Set the new product data with the "serial" as the document ID
-      await productsRef.doc(newProduct.serial).set(newProductData);
-
-      // Clear the form fields and reset the newProduct state
-      setNewProduct({
-        name: '',
-        serial: '',
-        category: '',
-        location: '',
-        lastModified: utcTimestamp,
-        project: "",
-      });
-
-      toast.success('New product added: ' + `[${newProductData.serial}] ` + newProduct.name);
-    } catch (error) {
-      toast.error('Error adding product: ' + error.message);
+    try{
+        await handleInsertProductDB({newProduct});
+        toast.success('New product added: ' + `[${newProduct.serial}] ` + newProduct.name);
+    } catch (error){
+        toast.error(`Error adding product: ${error}`);
     }
 
-    setSearchQuery('');
-
-  }
+    setNewProduct({
+      name: '',
+      serial: '',
+      category: '',
+      location: '',
+      lastModified: utcTimestamp,
+      state: 'In Stock',
+    })
+}
 
   const handleInputChange = (event) => {
     const { name, value } = event.target;
@@ -119,7 +94,7 @@ export default function AddProductModal({setSearchQuery}) {
                 {/*body*/}
                 <div className="relative p-6 flex-auto text-slate-800 dark:text-gray-200">
 
-                <form onSubmit={handleInsertProductDB} autoComplete="off">
+                <form onSubmit={handleSubmit} autoComplete="off">
                     <div class="relative z-0 w-full mb-6 group">
                         <input name="name" id="name" value={newProduct.name} onChange={handleInputChange} class="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer" placeholder=" " required />
                         <label for="name" class="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:left-0 peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">Product Name</label>

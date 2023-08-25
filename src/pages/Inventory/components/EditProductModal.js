@@ -1,45 +1,41 @@
 import React from "react";
 import { useState } from "react";
-import firebase from "firebase";
 import toast from 'react-hot-toast';
 import { firestore } from "../../../cloud/firebase";
+import { handleEditProductDB, handleDeleteProductDB } from "../../../cloud/writer";
 
 export default function EditProductModal({products, productIndex, searchQuery, setSearchQuery, setShowEditProductModal}) {
 
   /* Handle new product creation in DB*/
   const [newProduct, setNewProduct] = useState({
-    name: products[productIndex].name,
-    serial: products[productIndex].serial,
-    category: products[productIndex].category,
-    location: products[productIndex].location,
+    ...products[productIndex]
   });
 
-  async function handleInsertProductDB(event) {
+  const handleUpdate = async (event) => {
     event.preventDefault();
-    try {
-      // Create a reference to the "products" collection
-      const productsRef = firestore.collection('products');
 
-      // Prepare the new product data to be added to Firestore
-      const newProductData = {
-        name: newProduct.name,
-        category: newProduct.category,
-        location: newProduct.location,
-        lastModified: firebase.firestore.Timestamp.now(), // Use Firestore timestamp
-      };
-
-      // Set the new product data with the "serial" as the document ID
-      await productsRef.doc(products[productIndex].serial).update(newProductData);
-
-      toast.success('Product updated: ' + `[${products[productIndex].serial}] ` + newProduct.name);
-    } catch (error) {
-      toast.error('Error updating product: ' + error.message);
+    try{
+        await handleEditProductDB({newProduct});
+        setShowEditProductModal(false);
+        toast.success('Product Updated: ' + `[${newProduct.serial}] ` + newProduct.name);
+    } catch (error){
+        toast.error(`Error updating product: ${error}`);
     }
 
-    setSearchQuery(searchQuery);
-    setShowEditProductModal(false);
+  } 
 
-  }
+  const handleDelete = async (event) => {
+    event.preventDefault();
+
+    try{
+        await handleDeleteProductDB({newProduct});
+        setShowEditProductModal(false);
+        toast.success('Product deleted: ' + `[${newProduct.serial}] ` + newProduct.name);
+    } catch (error){
+        toast.error(`Error deleting product: ${error}`);
+    }
+
+  } 
 
   const handleInputChange = (event) => {
     const { name, value } = event.target;
@@ -48,22 +44,6 @@ export default function EditProductModal({products, productIndex, searchQuery, s
       [name]: value,
     });
   };
-
-  const handleDeleteProduct = (event) => {
-    event.preventDefault();
-    try {
-        // Construct the reference to the document to delete
-        const docRef = firestore.collection("products").doc(products[productIndex].serial);
-
-        // Delete the document and fetch the items linked to that document
-        docRef.delete();
-        toast.success(`Deleted product: ${products[productIndex].serial}`)
-    } catch (error) {
-        toast.error('Error deleting product' + error.message);
-    }
-    setSearchQuery(searchQuery);
-    setShowEditProductModal(false);
-  }
   
   return (
     <>
@@ -83,7 +63,7 @@ export default function EditProductModal({products, productIndex, searchQuery, s
                         dir="rtl"
                         className="text-red-500 background-transparent font-bold uppercase px-6 py-2 text-sm outline-none focus:outline-none mr-1 mb-1 ease-linear transition-all duration-150 absolute right-0"
                         type="button"
-                        onClick={handleDeleteProduct}
+                        onClick={handleDelete}
                         >
                         Delete
                 </button> 
@@ -92,7 +72,7 @@ export default function EditProductModal({products, productIndex, searchQuery, s
                 {/*body*/}
                 <div className="relative p-6 flex-auto text-slate-800 dark:text-gray-200">
 
-                <form onSubmit={handleInsertProductDB}>
+                <form onSubmit={handleUpdate}>
                     <div class="relative z-0 w-full mb-6 group">
                         <input name="name" id="name" value={newProduct.name} onChange={handleInputChange} class="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer" placeholder=" " required />
                         <label for="name" class="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:left-0 peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">Product Name</label>
