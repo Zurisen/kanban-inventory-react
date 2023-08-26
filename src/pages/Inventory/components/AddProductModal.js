@@ -24,6 +24,10 @@ export default function AddProductModal({setSearchQuery}) {
     state: 'In Stock',
   });
 
+  const [newProductAddedCategories, setNewProductAddedCategories] = useState({
+
+  })
+
   useEffect(() => {
     const unsubscribeFetchOptionalProductsCategories = fetchOptionalProductsCategories((data) => {
       setAvailableCategories(data);
@@ -68,7 +72,14 @@ export default function AddProductModal({setSearchQuery}) {
     event.preventDefault();
 
     try{
-        await handleInsertProductDB({newProduct});
+        const matchingFieldsAddedCategories = Object.keys(newProductAddedCategories)
+          .filter((category) => addedCategories.includes(category))
+          .reduce((obj, key) => {
+            obj[key] = newProductAddedCategories[key];
+            return obj;
+          }, {}); //to prevent changed undesired fields to get added
+        const completeProduct = {...newProduct, ...matchingFieldsAddedCategories};
+        await handleInsertProductDB({newProduct:completeProduct});
         toast.success('New product added: ' + `[${newProduct.serial}] ` + newProduct.name);
     } catch (error){
         toast.error(`Error adding product: ${error}`);
@@ -161,14 +172,14 @@ export default function AddProductModal({setSearchQuery}) {
                     {/* Add extra fields*/}
 
                     { 
-                      addedCategories.map((category, index) => (<AddExtraFieldInput availableCategories={availableCategories} setAvailableCategories={setAvailableCategories} category={category} handleRemoveCategory={handleRemoveCategory} handleChangeCategory={handleChangeCategory}/>))
+                      addedCategories.map((category, index) => (<AddExtraFieldInput availableCategories={availableCategories} setAvailableCategories={setAvailableCategories} category={category} handleRemoveCategory={handleRemoveCategory} handleChangeCategory={handleChangeCategory} newProductAddedCategories={newProductAddedCategories} setNewProductAddedCategories={setNewProductAddedCategories}/>))
                     }
                     { availableCategories.length>0 &&
                       <li >
                         <a
                           onClick={handleAddCategory}
                           style={{ cursor: 'pointer' }}
-                          className="block text-sm py-1 mb-5 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white"> + Add extra field</a>
+                          className="block text-sm py-1 mb-7 rounded-sm hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white"> + Add extra field</a>
                       </li>
                     }
                     <button dir="ltr" type="submit" className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"

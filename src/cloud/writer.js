@@ -166,22 +166,23 @@ export const handleMoveProjectDB = async ({newMovingTaskData, deletedProducts, s
 }
 
 export const handleInsertProductDB = async ({newProduct}) => {
-      // Check if a document with the same serial already exists
-      const existingProductSnapshot = await productsRef.doc(newProduct.serial).get();
+    // Check if a document with the same serial already exists
+    console.log(newProduct);
 
-      if (existingProductSnapshot.exists) {
-        throw new Error('Error: Serial number is already in use.');
-      }
+    const existingProductSnapshot = await productsRef.doc(newProduct.serial).get();
+    if (existingProductSnapshot.exists) {
+    throw new Error('Error: Serial number is already in use.');
+    }
 
-      // Prepare the new product data to be added to Firestore
-      const newProductData = {
-        ...newProduct,
-        lastModified: firebase.firestore.Timestamp.now(), // Use Firestore timestamp
-        project: "",
-      };
+    // Prepare the new product data to be added to Firestore
+    const newProductData = {
+    ...newProduct,
+    lastModified: firebase.firestore.Timestamp.now(), // Use Firestore timestamp
+    project: "",
+    };
 
-      // Set the new product data with the "serial" as the document ID
-      await productsRef.doc(newProduct.serial).set(newProductData);
+    // Set the new product data with the "serial" as the document ID
+    await productsRef.doc(newProduct.serial).set(newProductData);
   }
 
 
