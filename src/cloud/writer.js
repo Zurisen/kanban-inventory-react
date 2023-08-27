@@ -195,7 +195,7 @@ export const handleEditProductDB = async ({newProduct}) => {
       };
 
       // Set the new product data with the "serial" as the document ID
-      await productsRef.doc(newProduct.serial).update(newProductData);
+      await productsRef.doc(newProduct.serial).set(newProductData, {merge:false});
 }
 
 export const handleDeleteProductDB = async ({newProduct}) => {

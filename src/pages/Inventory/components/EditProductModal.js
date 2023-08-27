@@ -1,21 +1,106 @@
 import React from "react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import toast from 'react-hot-toast';
-import { firestore } from "../../../cloud/firebase";
 import { handleEditProductDB, handleDeleteProductDB } from "../../../cloud/writer";
+import { fetchOptionalProductsCategories } from "../../../cloud/reader";
+import AddExtraFieldInput from "./AddExtraFieldInput";
 
 export default function EditProductModal({products, productIndex, searchQuery, setSearchQuery, setShowEditProductModal}) {
 
   /* Handle new product creation in DB*/
+  const [showModal, setShowModal] = useState(false);
   const [newProduct, setNewProduct] = useState({
     ...products[productIndex]
   });
+  const [availableCategories, setAvailableCategories] = useState([]);
+  const [addedCategories, setAddedCategories] = useState([])
+  const [newProductAddedCategories, setNewProductAddedCategories] = useState({
+
+  })
+
+  useEffect(() => {
+    const unsubscribeFetchOptionalProductsCategories = fetchOptionalProductsCategories((data) => {
+      setAvailableCategories(data);
+      findOptionalCategories(data);
+
+    });
+
+    return () => {
+      unsubscribeFetchOptionalProductsCategories();
+    };
+  }, [showModal]);
+
+  const findOptionalCategories = (availableCategories) => {
+    const addedCategories = Object.keys(newProduct).filter((key) =>
+      availableCategories.includes(key)
+    );
+
+    const newProductAddedCategories = addedCategories.reduce((result, key) => {
+      result[key] = newProduct[key];
+      delete newProduct[key]; // Remove the entry from newProduct
+      return result;
+    }, {});
+
+    // Remove the entries from availableCategories
+    addedCategories.forEach((category) => {
+      const index = availableCategories.indexOf(category);
+      if (index !== -1) {
+        availableCategories.splice(index, 1);
+      }
+    });
+
+    // Update the state with the modified values
+    setNewProduct(newProduct);
+    setAvailableCategories([...availableCategories]);
+    setAddedCategories(addedCategories);
+    setNewProductAddedCategories(newProductAddedCategories);
+
+  };
+
+  const handleAddCategory = () => {
+    if (availableCategories.length > 0) {
+      const firstCategory = availableCategories[0];
+      setAddedCategories([...addedCategories, firstCategory]);
+      setAvailableCategories(availableCategories.slice(1));
+    }
+  };
+
+  const handleRemoveCategory = (categoryToRemove) => {
+    const updatedCategories = addedCategories.filter(
+      (category) => category !== categoryToRemove
+    );
+    setAddedCategories(updatedCategories);
+    setAvailableCategories([...availableCategories, categoryToRemove]);
+  };
+
+  const handleChangeCategory = (oldCategory, newCategory) => {
+    const updatedAvailableCategories = [
+      ...availableCategories.filter((category) => category !== newCategory),
+      oldCategory,
+    ];
+
+    setAvailableCategories(updatedAvailableCategories);
+    setAddedCategories((prevCategories) =>
+      prevCategories.map((category) =>
+        category === oldCategory ? newCategory : category
+      )
+    );
+  };
+
 
   const handleUpdate = async (event) => {
     event.preventDefault();
 
     try{
-        await handleEditProductDB({newProduct});
+        const matchingFieldsAddedCategories = Object.keys(newProductAddedCategories)
+        .filter((category) => addedCategories.includes(category))
+        .reduce((obj, key) => {
+          obj[key] = newProductAddedCategories[key];
+          return obj;
+        }, {}); //to prevent changed undesired fields to get added
+        const completeProduct = {...newProduct, ...matchingFieldsAddedCategories};
+        console.log(newProductAddedCategories);
+        await handleEditProductDB({newProduct:completeProduct});
         setShowEditProductModal(false);
         toast.success('Product Updated: ' + `[${newProduct.serial}] ` + newProduct.name);
     } catch (error){
@@ -93,6 +178,20 @@ export default function EditProductModal({products, productIndex, searchQuery, s
                         <label for="location" class="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:left-0 peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">Location</label>
                     </div>
 
+                    {/* Add extra fields*/}
+
+                    { 
+                      addedCategories.map((category, index) => (<AddExtraFieldInput availableCategories={availableCategories} setAvailableCategories={setAvailableCategories} category={category} handleRemoveCategory={handleRemoveCategory} handleChangeCategory={handleChangeCategory} newProductAddedCategories={newProductAddedCategories} setNewProductAddedCategories={setNewProductAddedCategories} addedCategories={addedCategories} setAddedCategories={setAddedCategories}/>))
+                    }
+                    { availableCategories.length>0 &&
+                      <li >
+                        <a
+                          onClick={handleAddCategory}
+                          style={{ cursor: 'pointer' }}
+                          className="block text-sm py-1 mb-7 rounded-sm hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white"> + Add extra field</a>
+                      </li>
+                    }
+
                     <button dir="ltr" type="submit" className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
                     >Update</button>
 
@@ -102,7 +201,7 @@ export default function EditProductModal({products, productIndex, searchQuery, s
                         type="button"
                         onClick={() => setShowEditProductModal(false)}
                         >
-                            Close
+                            Cancel
                     </button>                        
 
                     </form>

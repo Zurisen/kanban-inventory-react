@@ -1,12 +1,12 @@
 import React, { useState } from 'react'
 
-export const AddExtraFieldInput = ({availableCategories, setAvailableCategories, handleChangeCategory, category, newProductAddedCategories, setNewProductAddedCategories}) => {
+export const AddExtraFieldInput = ({availableCategories, setAvailableCategories, handleChangeCategory, category, newProductAddedCategories, setNewProductAddedCategories, addedCategories, setAddedCategories}) => {
     const [selectedCategory, setSelectedCategory] = useState(category);
     const [showDropdown, setShowDropdown] = useState(false);
-    
+
     const onSelect = (newCategory) => {
-      setSelectedCategory(newCategory);
-      handleChangeCategory(category, newCategory); // Notify the parent component about the change
+        setSelectedCategory(newCategory);
+        handleChangeCategory(category, newCategory); // Notify the parent component about the change
     };
 
     const onChange = (event) => {
@@ -16,6 +16,33 @@ export const AddExtraFieldInput = ({availableCategories, setAvailableCategories,
             [name]:value
         });
     };
+
+    const onRemoveCategory = (nameToRemove) => {
+        // Create a copy of the current state object without the specified category
+        const updatedProduct = Object.keys(newProductAddedCategories).reduce(
+          (result, name) => {
+            if (name !== nameToRemove) {
+              result[name] = newProductAddedCategories[name];
+            }
+            return result;
+          },
+          {}
+        );
+
+        const updatedCategories = addedCategories.reduce((result, category) => {
+            if (category !== nameToRemove) {
+              result.push(category);
+            }
+            return result;
+          }, []);
+
+        // Update the state with the modified category list
+        setNewProductAddedCategories(updatedProduct);
+        setAddedCategories(updatedCategories);
+        setAvailableCategories([...availableCategories,
+        nameToRemove]);
+
+      };
 
     return (
         <div className="flex mb-5">
@@ -40,10 +67,10 @@ export const AddExtraFieldInput = ({availableCategories, setAvailableCategories,
                     </div>
                 }
                 <div className="relative w-full">
-                    <input type="search" onChange={onChange} id={selectedCategory} name={selectedCategory} value={newProductAddedCategories.selectedCategory} className="block p-1 pl-2 w-full z-20 text-sm text-gray-900 bg-gray-50 rounded-r-lg border-l-gray-100 border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white" placeholder="Some value" required/>
-                    <button type="submit" className="absolute top-0 right-0 p-1 h-full text-sm font-medium text-white bg-blue-700 rounded-r-lg border border-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"><svg className="w-4 h-4" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20">
-            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z"/>
-            </svg></button>
+                    <input type="search" onChange={onChange} id={selectedCategory} name={selectedCategory} value={newProductAddedCategories[selectedCategory]} className="block p-1 pl-2 w-full z-20 text-sm text-gray-900 bg-gray-50 rounded-r-lg border-l-gray-100 border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white" placeholder="Some value" required/>
+                    <a onClick={() => {onRemoveCategory(selectedCategory)}} className="absolute top-0 right-0 p-1 h-full text-sm font-medium text-white bg-red-500 rounded-r-lg focus:ring-4 focus:outline-none  dark:bg-red-500 dark:hover:bg-red-700 border-gray-300">
+                        {<i className="bi bi-x"></i>}
+                    </a>
                 </div>
             </div>
     )

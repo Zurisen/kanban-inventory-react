@@ -26,7 +26,6 @@ export const Calendar = ({stateColors}) => {
       unsubscribeFetchProductHistoriesSnapshot();
     };
   }, []);
-  console.log(projectsEvents)
 
   // Define a function to customize event styles
   const eventStyleGetter = (event, start, end, isSelected) => {
