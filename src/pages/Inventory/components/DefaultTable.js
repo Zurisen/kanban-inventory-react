@@ -1,9 +1,17 @@
 import { useState } from "react";
 import EditProductModal from "./EditProductModal";
 
-export default function DefaultTable({products, stateColors, searchQuery, setSearchQuery}) {
+export default function DefaultTable({products, columns, stateColors, searchQuery, setSearchQuery}) {
     const [showEditProductModal, setShowEditProductModal] = useState(false);
     const [productIndex, setProductIndex] = useState(0);
+    const excludedKeys = ['name', 'serial', 'lastModified', 'state'];
+
+    const filteredColumns = Object.keys(columns).reduce((filteredObj, key) => {
+      if (!excludedKeys.includes(key)) {
+        filteredObj[key] = columns[key];
+      }
+      return filteredObj;
+    }, {});
 
     return (
     <div className="relative overflow-x-auto rounded-lg">
@@ -18,14 +26,14 @@ export default function DefaultTable({products, stateColors, searchQuery, setSea
                         Serial Number
                     </th>
                     <th scope="col" className="px-6 py-3">
-                        Category
-                    </th>
-                    <th scope="col" className="px-6 py-3">
-                        Location
-                    </th>
-                    <th scope="col" className="px-6 py-3">
                         Last Modified
                     </th>
+
+                    {Object.values(filteredColumns).map((columnValue) => (
+                    <th key={columnValue} scope="col" className="px-6 py-3">
+                        {columnValue}
+                    </th>
+                    ))}
                     <th scope="col" className="px-6 py-3">
                         State
                     </th>
@@ -47,14 +55,14 @@ export default function DefaultTable({products, stateColors, searchQuery, setSea
                                 {product.serial}
                             </td>
                             <td className="px-6 py-4">
-                                {product.category}
-                            </td>
-                            <td className="px-6 py-4">
-                                {product.location}
-                            </td>
-                            <td className="px-6 py-4">
                                 {product.lastModified}
                             </td>
+                            {Object.keys(filteredColumns).map((columnKey) => (
+                            <td key={columnKey} scope="col" className="px-6 py-3">
+                                {product[columnKey]}
+                            </td>
+                            ))}
+
                             <td className={`px-6 py-4`} style={{color:stateColors[product.state]}}> 
                                 {product.state}
                             </td>

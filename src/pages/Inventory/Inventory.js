@@ -8,7 +8,13 @@ export const Inventory = ({snapshotData, statesData, stateColors}) => {
   const [searchQuery, setSearchQuery] = useState("");
   const [products, setProducts] = useState([]);
   const [itemsFound, setItemsFound] = useState(0);
-
+  const [columns, setColumns] = useState({
+    'name': 'Product Name',
+    'serial': 'Serial Number',
+    'category': 'Category',
+    'location': 'Location',
+    'state': 'State',
+  });
   // Move the filterProducts function and useEffect to the Inventory component
   const filterProducts = async (searchQuery) => {
       try {
@@ -21,13 +27,28 @@ export const Inventory = ({snapshotData, statesData, stateColors}) => {
         // Filter the products based on the user's search query
         const filteredProducts = unfilteredProducts.filter((product) => {
           const lowerCaseSearchQuery = searchQuery.toLowerCase();
-          return (
-            product.name.toLowerCase().includes(lowerCaseSearchQuery) ||
-            product.serial.toString().includes(lowerCaseSearchQuery) ||
-            product.category.toLowerCase().includes(lowerCaseSearchQuery) ||
-            product.location.toLowerCase().includes(lowerCaseSearchQuery) ||
-            product.state.toLowerCase().includes(lowerCaseSearchQuery) 
-          );
+          
+          // Get the keys of the product object
+          const productKeys = Object.keys(product);
+          
+          // Filter the columns object to include only keys that exist in the product
+          const filteredColumns = Object.keys(columns)
+            .filter((columnKey) => productKeys.includes(columnKey))
+            .reduce((filteredObj, columnKey) => {
+              filteredObj[columnKey] = columns[columnKey];
+              return filteredObj;
+            }, {});
+        
+          // Define an array of criteria based on the selected columns
+          const searchCriteria = Object.keys(filteredColumns).map((columnKey) => {
+            const columnName = product[columnKey].toLowerCase();
+            return columnName.includes(lowerCaseSearchQuery);
+          });
+        
+          // Check if any of the search criteria is true
+          const isMatch = searchCriteria.some((criteria) => criteria);
+        
+          return isMatch;
         });
     
         // Convert the lastModified strings to Date objects
@@ -61,8 +82,8 @@ export const Inventory = ({snapshotData, statesData, stateColors}) => {
         </div>
 
         {/* Products Table */}
-        <div className='py-5'>
-        <DefaultTable products={products} stateColors={stateColors} setSearchQuery={setSearchQuery} searchQuery={searchQuery} />
+        <div className='py-3'>
+        <DefaultTable products={products} columns={columns} stateColors={stateColors} setSearchQuery={setSearchQuery} searchQuery={searchQuery} />
         </div>
 
       </div>
