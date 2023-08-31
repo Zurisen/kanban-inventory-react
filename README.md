@@ -1,7 +1,7 @@
 # Kanban Inventory
 This is the code repository for a minimalistic Inventory system powered by <a href="https://firebase.google.com">Firebase</a>. It is currently oriented to small companies following a B2B/B2C rental system. The entire web app makes use of Firestore snapshots to minimize read/write operations to Firestore database. Thus working as a single-page application.
 ###
-<img align="middle" src="public/KanbanInv.png" class="pt-[10px]">
+<img align="middle" src="public/KanbanInvSS.png" class="pt-[10px]">
 
 ## Structure
 The application is structured in 4 main pages:
