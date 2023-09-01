@@ -14,6 +14,7 @@ export const Inventory = ({snapshotData, statesData, stateColors}) => {
     'category': 'Category',
     'location': 'Location',
     'state': 'State',
+    'project': 'Project'
   });
   // Move the filterProducts function and useEffect to the Inventory component
   const filterProducts = async (searchQuery) => {
@@ -78,7 +79,7 @@ export const Inventory = ({snapshotData, statesData, stateColors}) => {
         {/* Add product Button & Search Bar */}
         <div style={{ display: 'grid', gridTemplateColumns: 'auto 1fr', gap: '8px' }}>
           <AddProductModal setSearchQuery={setSearchQuery} />
-          <SearchBar itemsFound={itemsFound} setSearchQuery={setSearchQuery}/>
+          <SearchBar itemsFound={itemsFound} columns={columns} setColumns={setColumns} setSearchQuery={setSearchQuery}/>
         </div>
 
         {/* Products Table */}

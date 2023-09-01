@@ -24,8 +24,8 @@ export const handleInsertProjectDB = async ({projectInfo, searchedProducts}) => 
     searchedProducts.forEach((serial) => {
         const docRef = productsRef.doc(serial);
         const docHistoryRef = docRef.collection('history').doc(randomId);
-        batch.set(docHistoryRef, {project: newProjectData.title, startDate:newProjectData.startDate, endDate:newProjectData.endDate, state:newProjectData.state});
-        batch.update(docRef,  {project: newProjectData.title, historyId:randomId, lastModified: firebase.firestore.Timestamp.now()})
+        batch.set(docHistoryRef, {project: newProjectData.title, location: newProjectData.location, startDate:newProjectData.startDate, endDate:newProjectData.endDate, state:newProjectData.state});
+        batch.update(docRef,  {project: newProjectData.title, location: newProjectData.location, historyId:randomId, lastModified: firebase.firestore.Timestamp.now()})
     });
 
     // Commit the batch write to update all product documents in a single batch operation
@@ -66,8 +66,8 @@ export const handleEditProjectDB = async ({projectInfo, searchedProducts, delete
             searchedProducts.forEach((serial) => {
                 const docRef = collectionRef.doc(serial);
                 const docHistoryRef = collectionRef.doc(serial).collection('history').doc(historyId);
-                batch.set(docHistoryRef, {project: projectInfo.title, startDate: projectInfo.startDate, endDate:projectInfo.endDate, state: projectInfo.state});
-                batch.update(docRef, {project: projectInfo.title, historyId:historyId, lastModified: firebase.firestore.Timestamp.now()});
+                batch.set(docHistoryRef, {project: projectInfo.title, location: projectInfo.location, startDate: projectInfo.startDate, endDate:projectInfo.endDate, state: projectInfo.state});
+                batch.update(docRef, {project: projectInfo.title, location: projectInfo.location, historyId:historyId, lastModified: firebase.firestore.Timestamp.now()});
             });
         }
   
