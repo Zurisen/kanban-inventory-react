@@ -17,4 +17,5 @@ To get started:
 3. Save the Firebase credentials in a `.env` file in the root folder of the project.
 4. Currently the app only supports email login, so create a user in Firebase-->Authentication, and give it read and write access to the previously created Firestore database.
 5. `npm start` the App.
-6. Create a few products in the Inventory page, and a Project Type in the Settings/Projects Settings.
+6. Projects Types are handled from the Settings page. It is necessary to create at least one project type to start creating projects. 
+7. Create a few products in the Inventory page, and a Project from the Project page. Projects and products assigned to projects can also be seen from the calendar page.
