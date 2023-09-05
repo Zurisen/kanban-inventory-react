@@ -4,11 +4,13 @@ import { toast } from 'react-hot-toast';
 import { useState } from 'react';
 import ProjectsSettingsModal from './ProjectsSettingsModal';
 import SignInOut from './SignInOut';
+import ProductsSettingsModal from './ProductsSettingsModal';
 
 export const SettingsDropdown = ({darkMode, setDarkMode}) => {
 
   const [isDropdownVisible, setIsDropdownVisible] = useState(false);
   const [isProjectsSettingsVisible, setIsProjectsSettingsVisible] = useState(false);
+  const [isProductsSettingsVisible, setIsProductsSettingsVisible] = useState(false);
 
   const toggleDropdown = () => {
       setIsDropdownVisible(prevState => !prevState);
@@ -42,6 +44,12 @@ export const SettingsDropdown = ({darkMode, setDarkMode}) => {
                   className="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">Projects Settings</a>
               </li>
 
+              <li >
+                <a onClick={()=>{setIsProductsSettingsVisible(true)}} 
+                  style={{ cursor: 'pointer' }}
+                  className="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">Products Settings</a>
+              </li>
+
             </ul>
             <div  className="py-2">
               <li onClick={()=>{setDarkMode(!darkMode)}}>
@@ -56,6 +64,8 @@ export const SettingsDropdown = ({darkMode, setDarkMode}) => {
 </div>
 
 {isProjectsSettingsVisible && <ProjectsSettingsModal isProjectsSettingsVisible={isProjectsSettingsVisible} setIsProjectsSettingsVisible={setIsProjectsSettingsVisible}/>}
+{isProductsSettingsVisible && <ProductsSettingsModal isProductsSettingsVisible={isProductsSettingsVisible} setIsProductsSettingsVisible={setIsProductsSettingsVisible}/>}
+
 </>
   )
 }
