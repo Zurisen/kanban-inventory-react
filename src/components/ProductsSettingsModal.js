@@ -4,9 +4,12 @@ import toast from 'react-hot-toast';
 import "./ColorPicker.css"
 import { fetchOptionalProductsCategories } from "../cloud/reader";
 import ProductExtraField from "./ProductExtraField";
+import { firestore } from "../cloud/firebase";
 
 export default function ProductsSettingsModal({isProductsSettingsVisible, setIsProductsSettingsVisible}) {
     const [extraFields, setExtraFields] = useState([]);
+    const [deletedExtraFields, setDeletedExtraFields] = useState([]);
+    const [newField, setNewField] = useState('');
 
     useEffect(() => {
         const unsubscribeFetchOptionalProductsCategories = fetchOptionalProductsCategories((data) => {
@@ -17,6 +20,60 @@ export default function ProductsSettingsModal({isProductsSettingsVisible, setIsP
           unsubscribeFetchOptionalProductsCategories();
         };
       }, []);
+
+    async function handleAddExtraField(event)  {
+        event.preventDefault();
+        if (newField.split(" ").join("") != "") {
+            setExtraFields([...extraFields, newField])
+        }
+        setNewField('');
+    }
+
+    const handleDeleteExtraField = async (event, fieldToDelete) => {
+        event.preventDefault();
+        // Check if there are no documents in the collection
+        const updatedFields = extraFields.filter((field) => field !== fieldToDelete);
+        setExtraFields(updatedFields);
+        if (deletedExtraFields) {
+            setDeletedExtraFields([
+                ...deletedExtraFields,
+                fieldToDelete
+            ]);
+        }
+
+    }
+    const handleSubmitProductSettings = async (event) => {
+        event.preventDefault();
+        try {
+            const deletionBatch = firestore.batch();
+
+            deletedExtraFields.forEach((category) => {
+                const docRef = firestore.collection("optionalProductsFields").doc(category);
+                deletionBatch.delete(docRef);
+            });
+            await deletionBatch.commit();
+            console.log("Extra fields succesfully deleted");
+        } catch (error) {
+            console.error("Error deleting batch", error);
+        }
+
+        try {
+            const additionBatch = firestore.batch();
+
+            extraFields.forEach((field) => {
+                const docRef = firestore.collection("optionalProductsFields").doc(field);
+                additionBatch.set(docRef, {});
+            });
+
+            await additionBatch.commit();
+            console.log("Product fields succesfully added");
+            
+        } catch (error) {
+            console.error("Error adding batch", error);
+        }
+        window.location.reload();
+
+    }
 
     return (
         <>
@@ -41,19 +98,19 @@ export default function ProductsSettingsModal({isProductsSettingsVisible, setIsP
                                 <label for="email" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Extra fields: </label>
                                 <div className="flex flex-wrap">
                                     {extraFields.length>0 && extraFields.map((field, index) => (
-                                        <ProductExtraField key={index} field={field}/>
+                                        <ProductExtraField key={index} field={field} handleDeleteExtraField={handleDeleteExtraField}/>
                                     ))}
                                 </div>
 
                                     <div className="flex">
-                                    <input type="" id="" className="shadow-sm bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500 dark:shadow-sm-light" placeholder="Some extra field"/>
+                                    <input type="" onChange={(event)=>{setNewField(event.target.value)}} value={newField} id="" className="shadow-sm bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500 dark:shadow-sm-light" placeholder="Some extra field"/>
 
     
-                                    <button class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 mr-2 ml-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800">Add</button>
+                                    <button onClick={handleAddExtraField} className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 mr-2 ml-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800">Add</button>
                                 </div>
                             </div>
 
-                            <button dir="ltr" type="submit" className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
+                            <button dir="ltr" type="submit" onClick={handleSubmitProductSettings} className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
                             >Update</button>
 
                             <button
